@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="100%" height="100%">
+  <defs>
+    <linearGradient id="capVisorShade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="softBlurCap" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3.5"/>
+    </filter>
+  </defs>
+
+  <!-- Shadow behind cap -->
+  <ellipse cx="300" cy="460" rx="230" ry="45" fill="#000000" opacity="0.18" filter="url(#softBlurCap)"/>
+
+  <!-- Crown / Dome of Cap -->
+  <path class="garment-color-fill" d="M 125 350 C 120 220, 200 130, 300 125 C 400 130, 480 220, 475 350 C 420 370, 180 370, 125 350 Z" fill="#1e1e1e"/>
+
+  <!-- Panel Seams on Crown -->
+  <path d="M 300 125 L 300 355" stroke="#000000" stroke-width="2.5" stroke-opacity="0.3" fill="none"/>
+  <path d="M 300 125 Q 220 230 150 350" stroke="#000000" stroke-width="2" stroke-opacity="0.25" fill="none"/>
+  <path d="M 300 125 Q 380 230 450 350" stroke="#000000" stroke-width="2" stroke-opacity="0.25" fill="none"/>
+
+  <!-- Eyelets / Ventilation holes -->
+  <circle cx="230" cy="240" r="5" fill="#000000" opacity="0.4"/>
+  <circle cx="230" cy="240" r="3" fill="#111111"/>
+  <circle cx="370" cy="240" r="5" fill="#000000" opacity="0.4"/>
+  <circle cx="370" cy="240" r="3" fill="#111111"/>
+
+  <!-- Curved Visor / Bill -->
+  <path class="garment-color-fill" d="M 90 355 C 130 325, 470 325, 510 355 C 495 440, 105 440, 90 355 Z" fill="#1e1e1e"/>
+  <path d="M 90 355 C 130 325, 470 325, 510 355 C 495 440, 105 440, 90 355 Z" fill="url(#capVisorShade)"/>
+  <path d="M 90 355 C 130 325, 470 325, 510 355" stroke="#000000" stroke-width="2.5" stroke-opacity="0.35" fill="none"/>
+  
+  <!-- Visor Stitching Lines -->
+  <path d="M 105 370 C 160 345, 440 345, 495 370" stroke="#000000" stroke-width="1.8" stroke-dasharray="4,2" stroke-opacity="0.25" fill="none"/>
+  <path d="M 115 385 C 170 360, 430 360, 485 385" stroke="#000000" stroke-width="1.8" stroke-dasharray="4,2" stroke-opacity="0.25" fill="none"/>
+  <path d="M 130 405 C 190 380, 410 380, 470 405" stroke="#000000" stroke-width="1.8" stroke-dasharray="4,2" stroke-opacity="0.25" fill="none"/>
+
+  <!-- Top Button (Squatchee) -->
+  <ellipse cx="300" cy="125" rx="14" ry="7" fill="#111111" opacity="0.7"/>
+  <ellipse cx="300" cy="123" rx="12" ry="6" class="garment-color-fill" fill="#1e1e1e"/>
+  <ellipse cx="300" cy="123" rx="12" ry="6" stroke="#ffffff" stroke-width="1" stroke-opacity="0.2" fill="none"/>
+</svg>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATELIER. — Custom ρούχα με το δικό σας σήμα | Τύπωμα & Κέντημα</title>
+  <meta name="description" content="Custom t-shirts, hoodies, φούτερ και καπέλα με το logo σας. Δείτε το σχέδιό σας ζωντανά πάνω στο ρούχο με το Mockup Studio και ζητήστε προσφορά σε λίγα λεπτά.">
+  <meta name="theme-color" content="#2c3192">
+  <meta property="og:title" content="ATELIER. — Custom ρούχα με το δικό σας σήμα">
+  <meta property="og:description" content="Ανεβάστε το logo σας και δείτε το αμέσως σε t-shirt, hoodie ή καπέλο.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="modulepreload" href="vendor/three.module.min.js">
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="hdr">
+    <div class="topbar">
+      <div class="wrap topbar-in">
+        <span>Τύπωμα & κέντημα σε ρούχα για brands, επιχειρήσεις και ομάδες</span>
+        <span class="topbar-links">
+          <a href="tel:+302100000000">210 000 0000</a>
+          <a href="mailto:info@example.gr">info@example.gr</a>
+        </span>
+      </div>
+    </div>
+    <div class="wrap hdr-in">
+      <a href="#top" class="brand" aria-label="Αρχική">ATELIER<span>.</span></a>
+      <nav class="nav" aria-label="Κύρια πλοήγηση">
+        <a href="#categories">Προϊόντα</a>
+        <a href="#studio">Mockup Studio</a>
+        <a href="#work">Δουλειές</a>
+        <a href="#process">Διαδικασία</a>
+        <a href="#about">Σχετικά</a>
+        <a href="#contact">Επικοινωνία</a>
+      </nav>
+      <div class="hdr-cta">
+        <a href="#quote" class="btn btn--primary btn--sm" data-quote>Ζητήστε προσφορά</a>
+        <button class="burger" id="burger" aria-label="Μενού" aria-expanded="false"><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="wrap hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span class="dot"></span> Custom apparel studio · Αθήνα</p>
+          <h1>Ρούχα που φέρουν <em>το δικό σας σήμα.</em></h1>
+          <p class="lead">Από το logo μέχρι το έτοιμο, συσκευασμένο ρούχο. Ανεβάστε το σχέδιό σας, δείτε το ζωντανά πάνω σε t-shirt, hoodie ή καπέλο και πάρτε προσφορά σε λίγα λεπτά.</p>
+          <div class="hero-actions">
+            <a href="#studio" class="btn btn--primary btn--lg">Δοκιμάστε το logo σας
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a href="#work" class="btn btn--ghost btn--lg">Δείγματα δουλειάς</a>
+          </div>
+          <dl class="hero-stats">
+            <div><dt>2–3</dt><dd>εβδομάδες παράδοση</dd></div>
+            <div><dt>10+</dt><dd>τεμάχια ελάχιστη ποσότητα</dd></div>
+            <div><dt>4</dt><dd>τεχνικές τυπώματος</dd></div>
+          </dl>
+        </div>
+
+        <div class="hero-visual reveal">
+          <div class="hero-card">
+            <div class="hero-card-top">
+              <div class="seg" id="heroGarments" role="group" aria-label="Είδος ρούχου"></div>
+              <span class="pill-live"><i></i> 3D</span>
+            </div>
+            <div class="hero-3d" id="hero3d" aria-label="Περιστρέψιμο 3D ρούχο"></div>
+            <div class="hero-card-bottom">
+              <div class="sw-row" id="heroDots" aria-label="Χρώμα"></div>
+              <span class="hint">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg>
+                Σύρετε για περιστροφή
+              </span>
+            </div>
+          </div>
+          <div class="float-badge float-badge--a"><b>Κέντημα</b><span>έως 12 χρώματα</span></div>
+          <div class="float-badge float-badge--b"><b>450gsm</b><span>premium fleece</span></div>
+        </div>
+      </div>
+
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track">
+          <span>Μεταξοτυπία</span><span>Κέντημα</span><span>DTF εκτύπωση</span><span>Custom ετικέτες</span><span>Puff print</span><span>Συσκευασία</span><span>Merch για events</span><span>Στολές ομάδων</span>
+          <span>Μεταξοτυπία</span><span>Κέντημα</span><span>DTF εκτύπωση</span><span>Custom ετικέτες</span><span>Puff print</span><span>Συσκευασία</span><span>Merch για events</span><span>Στολές ομάδων</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CATEGORIES ============ -->
+    <section class="sec" id="categories">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Κατηγορίες</p>
+          <h2>Διαλέξτε τη βάση, βάζουμε το σήμα σας.</h2>
+          <p>Premium blanks σε δεκάδες χρώματα και κοψίματα, επιλεγμένα για αντοχή και άψογο τύπωμα.</p>
+        </div>
+        <div class="cats">
+          <a href="#studio" class="cat reveal" data-pick="tshirt" style="--tint:#e9ebf9">
+            <div class="cat-img"><i class="m-tshirt" style="--c:#2c3192"></i></div>
+            <div class="cat-body"><h3>T-shirts</h3><p>Heavyweight, boxy & regular fit</p><span class="cat-link">Δοκιμή στο Studio →</span></div>
+          </a>
+          <a href="#studio" class="cat reveal" data-pick="hoodie" style="--tint:#f1efe8">
+            <div class="cat-img"><i class="m-hoodie" style="--c:#17181c"></i></div>
+            <div class="cat-body"><h3>Hoodies</h3><p>Oversized, 380–450gsm fleece</p><span class="cat-link">Δοκιμή στο Studio →</span></div>
+          </a>
+          <a href="#studio" class="cat reveal" data-pick="sweatshirt" style="--tint:#eef1ea">
+            <div class="cat-img"><i class="m-sweatshirt" style="--c:#4a5639"></i></div>
+            <div class="cat-body"><h3>Φούτερ</h3><p>Crewneck, brushed fleece</p><span class="cat-link">Δοκιμή στο Studio →</span></div>
+          </a>
+          <a href="#studio" class="cat reveal" data-pick="cap" style="--tint:#fbf5dc">
+            <div class="cat-img"><i class="m-cap" style="--c:#c9a227"></i></div>
+            <div class="cat-body"><h3>Καπέλα</h3><p>Dad caps, trucker, beanies</p><span class="cat-link">Δοκιμή στο Studio →</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MOCKUP STUDIO ============ -->
+    <section class="sec sec--tint" id="studio">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Mockup Studio</p>
+          <h2>Δείτε το σχέδιό σας πάνω στο ρούχο, ζωντανά.</h2>
+          <p>Ανεβάστε το logo σας, διαλέξτε ρούχο και χρώμα, σύρετε το σχέδιο στη θέση που θέλετε και περιστρέψτε το σε 3D.</p>
+        </div>
+
+        <div class="studio reveal">
+          <!-- Stage -->
+          <div class="studio-stage" id="studioStage" data-view="2d">
+            <div class="stage-top">
+              <div>
+                <h3 id="garmentName">Oversized Hoodie</h3>
+                <p id="garmentSpec">450gsm · French terry</p>
+              </div>
+              <div class="seg" role="group" aria-label="Προβολή">
+                <button type="button" class="seg-btn is-active" data-view="2d">2D</button>
+                <button type="button" class="seg-btn" data-view="3d">3D</button>
+              </div>
+            </div>
+
+            <div class="stage-2d">
+              <div class="art-wrap">
+                <div class="garment-art" id="garmentArt"></div>
+                <div class="print-area" id="printArea" title="Σύρετε για μετακίνηση">
+                  <img id="logoImg" alt="Το λογότυπό σας" draggable="false">
+                  <span class="print-tag">Περιοχή τυπώματος</span>
+                </div>
+              </div>
+            </div>
+            <div class="stage-3d" id="studio3d"></div>
+
+            <div class="stage-bottom">
+              <span class="hint">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+                <span class="only-2d">Σύρετε το logo για να το μετακινήσετε</span>
+                <span class="only-3d">Σύρετε για να περιστρέψετε το ρούχο</span>
+              </span>
+              <span class="color-chip"><i></i><span id="colorName">Μαύρο</span></span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="studio-panel">
+            <div class="step">
+              <div class="step-h"><b>1</b> Ρούχο</div>
+              <div class="garment-picker">
+                <button type="button" class="gp" data-garment="tshirt"><img src="assets/apparel/tshirt.svg" alt=""><span>T-shirt</span></button>
+                <button type="button" class="gp is-active" data-garment="hoodie"><img src="assets/apparel/hoodie.svg" alt=""><span>Hoodie</span></button>
+                <button type="button" class="gp" data-garment="sweatshirt"><img src="assets/apparel/sweatshirt.svg" alt=""><span>Φούτερ</span></button>
+                <button type="button" class="gp" data-garment="cap"><img src="assets/apparel/cap.svg" alt=""><span>Καπέλο</span></button>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-h"><b>2</b> Χρώμα υφάσματος</div>
+              <div class="sw-row" id="colorPicker"></div>
+            </div>
+
+            <div class="step">
+              <div class="step-h"><b>3</b> Το logo σας</div>
+              <label class="drop" id="dropZone">
+                <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden>
+                <span class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg></span>
+                <span class="drop-txt"><b>Ανεβάστε ή σύρετε εδώ το logo</b><small>PNG, JPG, SVG, WebP · έως 10MB</small><em id="logoFileName"></em></span>
+              </label>
+              <div class="samples">
+                <span>ή δοκιμάστε:</span>
+                <button type="button" class="sample is-active" data-sample="assets/samples/logo-light.svg" style="--bg:#17181c"><img src="assets/samples/logo-light.svg" alt="Δείγμα λογοτύπου 1"></button>
+                <button type="button" class="sample" data-sample="assets/samples/logo-dark.svg" style="--bg:#f6f6f3"><img src="assets/samples/logo-dark.svg" alt="Δείγμα λογοτύπου 2"></button>
+                <button type="button" class="sample" data-sample="assets/samples/emblem.svg" style="--bg:#eef0fb"><img src="assets/samples/emblem.svg" alt="Δείγμα εμβλήματος"></button>
+              </div>
+              <label class="check">
+                <input type="checkbox" id="knockout" checked>
+                <span>Αφαίρεση λευκού φόντου <small id="knockInfo"></small></span>
+              </label>
+            </div>
+
+            <div class="step">
+              <div class="step-h"><b>4</b> Θέση & μέγεθος <span class="step-val" id="sizeVal">60%</span></div>
+              <div class="size-bar">
+                <button type="button" id="sizeMinus" aria-label="Μικρότερο">−</button>
+                <input type="range" id="sizeRange" min="10" max="120" value="60" aria-label="Μέγεθος λογοτύπου">
+                <button type="button" id="sizePlus" aria-label="Μεγαλύτερο">+</button>
+              </div>
+              <div class="presets">
+                <button type="button" class="chip-btn is-active" data-preset="center">Κέντρο</button>
+                <button type="button" class="chip-btn" data-preset="chest">Στήθος</button>
+                <button type="button" class="chip-btn" data-preset="big">Μεγάλο τύπωμα</button>
+                <button type="button" class="chip-btn chip-btn--ghost" id="resetBtn">Επαναφορά</button>
+              </div>
+            </div>
+
+            <div class="panel-actions">
+              <button type="button" class="btn btn--primary btn--block" data-quote>Ζητήστε προσφορά με αυτό το σχέδιο</button>
+              <button type="button" class="btn btn--ghost btn--block" id="downloadBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg>
+                Λήψη mockup (PNG)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WORK / PORTFOLIO ============ -->
+    <section class="sec" id="work">
+      <div class="wrap">
+        <div class="sec-head sec-head--row reveal">
+          <div>
+            <p class="eyebrow">Portfolio</p>
+            <h2>Δείγματα της δουλειάς μας.</h2>
+          </div>
+          <div class="filters" role="group" aria-label="Φίλτρο">
+            <button type="button" class="chip-btn is-active" data-filter="all">Όλα</button>
+            <button type="button" class="chip-btn" data-filter="print">Τύπωμα</button>
+            <button type="button" class="chip-btn" data-filter="embroidery">Κέντημα</button>
+            <button type="button" class="chip-btn" data-filter="merch">Merch</button>
+          </div>
+        </div>
+
+        <div class="works">
+          <article class="work work--tall reveal" data-cat="print">
+            <div class="work-img" style="--bg:#2c3192"><i class="m-hoodie" style="--c:#f6f6f3"></i><img src="assets/samples/logo-dark.svg" alt="" class="work-logo" style="--w:28%; --t:41%"></div>
+            <div class="work-meta"><span class="tag">Μεταξοτυπία</span><h3>Studio Collection Hoodie</h3><p>Λευκό hoodie 450gsm · 2 χρώματα τύπωμα</p></div>
+          </article>
+          <article class="work reveal" data-cat="embroidery">
+            <div class="work-img" style="--bg:#f1efe8"><i class="m-cap" style="--c:#1f2a44"></i><img src="assets/samples/emblem.svg" alt="" class="work-logo" style="--w:16%; --t:36%"></div>
+            <div class="work-meta"><span class="tag">Κέντημα</span><h3>Dad Cap — Kaya Coffee</h3><p>3D κέντημα υψηλής πυκνότητας</p></div>
+          </article>
+          <article class="work reveal" data-cat="merch">
+            <div class="work-img" style="--bg:#f4cf1d"><i class="m-tshirt" style="--c:#17181c"></i><img src="assets/samples/logo-light.svg" alt="" class="work-logo" style="--w:30%; --t:38%"></div>
+            <div class="work-meta"><span class="tag">Merch</span><h3>Tour Tee — Halcyon</h3><p>150 τεμάχια · custom ετικέτες λαιμού</p></div>
+          </article>
+          <article class="work reveal" data-cat="print">
+            <div class="work-img" style="--bg:#e9ebf9"><i class="m-sweatshirt" style="--c:#4a5639"></i><img src="assets/samples/logo-light.svg" alt="" class="work-logo" style="--w:30%; --t:38%"></div>
+            <div class="work-meta"><span class="tag">DTF</span><h3>Crewneck — Team Edition</h3><p>Full colour τύπωμα · 80 τεμάχια</p></div>
+          </article>
+          <article class="work reveal" data-cat="embroidery">
+            <div class="work-img" style="--bg:#17181c"><i class="m-tshirt" style="--c:#d9ccb2"></i><img src="assets/samples/emblem.svg" alt="" class="work-logo" style="--w:12%; --t:33%; --l:58%"></div>
+            <div class="work-meta"><span class="tag">Κέντημα</span><h3>Uniform Tee — Hotel Aster</h3><p>Κέντημα στήθους · στολές προσωπικού</p></div>
+          </article>
+        </div>
+        <p class="note-small">* Ενδεικτικές εικόνες — θα αντικατασταθούν με φωτογραφίες από πραγματικές δουλειές.</p>
+      </div>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section class="sec sec--tint" id="process">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Διαδικασία</p>
+          <h2>Από την ιδέα στο έτοιμο ρούχο, σε 4 βήματα.</h2>
+        </div>
+        <ol class="steps">
+          <li class="reveal"><span class="steps-n">01</span><h3>Mockup & αίτημα</h3><p>Σχεδιάζετε στο Mockup Studio και στέλνετε το αίτημα με μεγέθη και ποσότητες.</p></li>
+          <li class="reveal"><span class="steps-n">02</span><h3>Προσφορά & δείγμα</h3><p>Σας προτείνουμε τεχνική, ύφασμα και τιμή μέσα σε 24 ώρες, με ψηφιακή δοκιμή.</p></li>
+          <li class="reveal"><span class="steps-n">03</span><h3>Παραγωγή</h3><p>Τύπωμα ή κέντημα με αυστηρό ποιοτικό έλεγχο σε κάθε τεμάχιο.</p></li>
+          <li class="reveal"><span class="steps-n">04</span><h3>Παράδοση</h3><p>Συσκευασμένα και έτοιμα στον χώρο σας σε 2–3 εβδομάδες.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section class="sec" id="about">
+      <div class="wrap about">
+        <div class="about-copy reveal">
+          <p class="eyebrow">Σχετικά με εμάς</p>
+          <h2>Δεν τυπώνουμε απλώς ρούχα. Χτίζουμε ταυτότητα.</h2>
+          <p>Συνεργαζόμαστε με δημιουργούς, streetwear labels, καφέ, εστιατόρια, εταιρείες και ομάδες για ρούχα που φοριούνται καθημερινά με περηφάνια.</p>
+          <p>Επιλέγουμε ανθεκτικά υφάσματα, σύγχρονα κοψίματα και μελάνια φιλικά προς το περιβάλλον, ώστε κάθε brand να έχει την επαγγελματική εικόνα που του αξίζει.</p>
+          <ul class="ticks">
+            <li>Προσωπική εξυπηρέτηση από την πρώτη ιδέα</li>
+            <li>Δωρεάν ψηφιακό mockup πριν την παραγωγή</li>
+            <li>Custom ετικέτες, hangtags & συσκευασία</li>
+          </ul>
+        </div>
+        <div class="about-panel reveal">
+          <div class="about-num"><b>500+</b><span>ολοκληρωμένες παραγωγές</span></div>
+          <div class="about-num"><b>24h</b><span>χρόνος απάντησης σε προσφορές</span></div>
+          <div class="about-num"><b>100%</b><span>έλεγχος ποιότητας ανά τεμάχιο</span></div>
+          <blockquote>“Η ποιότητα δεν είναι τυχαία. Είναι πάντα αποτέλεσμα προσοχής στη λεπτομέρεια.”</blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA BAND ============ -->
+    <section class="cta-band">
+      <div class="wrap cta-in reveal">
+        <div>
+          <h2>Έχετε το logo σας έτοιμο;</h2>
+          <p>Στείλτε μας το σχέδιο και πάρτε προσφορά μέσα σε 24 ώρες.</p>
+        </div>
+        <div class="cta-actions">
+          <a href="#quote" class="btn btn--yellow btn--lg" data-quote>Ζητήστε προσφορά</a>
+          <a href="#studio" class="btn btn--outline-light btn--lg">Mockup Studio</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="sec" id="contact">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Επικοινωνία</p>
+          <h2>Πείτε μας για το project σας.</h2>
+          <p>Θα σας προτείνουμε το κατάλληλο προϊόν, τεχνική τυπώματος ή κεντήματος και τιμή.</p>
+        </div>
+
+        <div class="contact">
+          <form class="card form reveal" id="contactForm" novalidate>
+            <h3>Φόρμα επικοινωνίας</h3>
+            <div class="row2">
+              <label class="lbl">Ονοματεπώνυμο *<input class="field" name="name" autocomplete="name" required></label>
+              <label class="lbl">Εταιρεία / ομάδα<input class="field" name="company" autocomplete="organization"></label>
+            </div>
+            <div class="row2">
+              <label class="lbl">Email *<input class="field" name="email" type="email" autocomplete="email" required></label>
+              <label class="lbl">Τηλέφωνο<input class="field" name="phone" type="tel" autocomplete="tel"></label>
+            </div>
+            <div class="row2">
+              <label class="lbl">Ενδιαφέρομαι για
+                <select class="field" name="interest">
+                  <option value="">Επιλέξτε…</option>
+                  <option>T-shirts</option>
+                  <option>Hoodies / φούτερ</option>
+                  <option>Καπέλα</option>
+                  <option>Στολές προσωπικού</option>
+                  <option>Merch για event / συγκρότημα</option>
+                  <option>Κάτι άλλο</option>
+                </select>
+              </label>
+              <label class="lbl">Ποσότητα (περίπου)<input class="field" name="qty" inputmode="numeric" placeholder="π.χ. 50 τεμάχια"></label>
+            </div>
+            <label class="lbl">Μήνυμα *<textarea class="field" name="message" rows="5" required placeholder="Π.χ. 30 μαύρα t-shirts με λευκό logo μπροστά και όνομα πίσω."></textarea></label>
+            <label class="file-drop">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
+              <span><b data-fname>Επισυνάψτε το logo ή το σχέδιό σας</b><small>JPG, PNG, PDF, SVG, AI, EPS έως 10MB (προαιρετικό)</small></span>
+              <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.svg,.ai,.eps" hidden>
+            </label>
+            <label class="check">
+              <input type="checkbox" name="consent" required>
+              <span>Συμφωνώ να επεξεργαστείτε τα στοιχεία μου για να απαντήσετε στο αίτημά μου, σύμφωνα με την <a href="#" onclick="return false">Πολιτική απορρήτου</a>. *</span>
+            </label>
+            <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+            <button type="submit" class="btn btn--primary btn--lg btn--block">Αποστολή αιτήματος</button>
+            <p class="form-msg" role="status" aria-live="polite"></p>
+          </form>
+
+          <aside class="contact-side reveal">
+            <a class="info-card" href="tel:+302100000000">
+              <i><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></i>
+              <span><small>Τηλέφωνο</small>210 000 0000</span>
+            </a>
+            <a class="info-card" href="mailto:info@example.gr">
+              <i><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></i>
+              <span><small>Email</small>info@example.gr</span>
+            </a>
+            <a class="info-card" href="#" onclick="return false">
+              <i><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-6 8-12a8 8 0 0 0-16 0c0 6 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg></i>
+              <span><small>Studio</small>Αθήνα, Ελλάδα</span>
+            </a>
+            <div class="hours">
+              <h4>Ωράριο</h4>
+              <dl>
+                <dt>Δευτέρα – Παρασκευή</dt><dd>09:00 – 17:00</dd>
+                <dt>Σάββατο</dt><dd>Με ραντεβού</dd>
+                <dt>Κυριακή</dt><dd>Κλειστά</dd>
+              </dl>
+            </div>
+            <div class="socials">
+              <a href="#" aria-label="Instagram" onclick="return false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+              <a href="#" aria-label="Facebook" onclick="return false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+              <a href="#" aria-label="TikTok" onclick="return false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 3a5 5 0 0 0 5 5M16 3v12a5 5 0 1 1-5-5"/></svg></a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="ftr">
+    <div class="wrap ftr-in">
+      <div class="ftr-brand">
+        <a href="#top" class="brand brand--light">ATELIER<span>.</span></a>
+        <p>Τύπωμα και κέντημα σε ρούχα, στολές και merchandise για brands, επιχειρήσεις και ομάδες.</p>
+      </div>
+      <div>
+        <h4>Πλοήγηση</h4>
+        <ul><li><a href="#categories">Προϊόντα</a></li><li><a href="#studio">Mockup Studio</a></li><li><a href="#work">Δουλειές</a></li><li><a href="#contact">Επικοινωνία</a></li></ul>
+      </div>
+      <div>
+        <h4>Πληροφορίες</h4>
+        <ul><li><a href="#" onclick="return false">Πολιτική απορρήτου</a></li><li><a href="#" onclick="return false">Όροι χρήσης</a></li><li><a href="#" onclick="return false">Πολιτική cookies</a></li></ul>
+      </div>
+      <div>
+        <h4>Επικοινωνία</h4>
+        <ul><li><a href="tel:+302100000000">210 000 0000</a></li><li><a href="mailto:info@example.gr">info@example.gr</a></li><li>Αθήνα, Ελλάδα</li></ul>
+      </div>
+    </div>
+    <div class="wrap ftr-bottom">
+      <span>© <span data-year></span> ATELIER. Με επιφύλαξη παντός δικαιώματος.</span>
+      <span>Design & development <a href="https://diifferent.com/" target="_blank" rel="noopener">dfrnt.</a></span>
+    </div>
+  </footer>
+
+  <!-- ============ QUOTE MODAL ============ -->
+  <div class="q" id="quote" role="dialog" aria-modal="true" aria-labelledby="qTitle" hidden>
+    <div class="q-bg" data-close></div>
+    <div class="q-box">
+      <button class="q-x" type="button" data-close aria-label="Κλείσιμο">&times;</button>
+
+      <aside class="q-side">
+        <p class="eyebrow">Ζητήστε προσφορά</p>
+        <h2 id="qTitle">Oversized Hoodie</h2>
+        <p class="q-spec" id="qSpec"></p>
+        <div class="q-preview"><img id="qPreview" alt="Το mockup σας"></div>
+        <button type="button" class="link-btn" data-edit>← Επεξεργασία στο Mockup Studio</button>
+        <dl class="q-sum">
+          <dt>Ρούχο</dt><dd id="sumGarment">—</dd>
+          <dt>Χρώμα</dt><dd id="sumColor">—</dd>
+          <dt>Θέσεις</dt><dd id="sumPositions">—</dd>
+          <dt>Τεχνική</dt><dd id="sumTech">—</dd>
+          <dt>Σύνολο</dt><dd id="sumQty">—</dd>
+        </dl>
+      </aside>
+
+      <form class="q-main" id="quoteForm" novalidate>
+        <div class="q-progress"><div class="q-bar"><span id="qProgress"></span></div><small id="qProgressTxt">0%</small></div>
+
+        <fieldset class="q-sec">
+          <legend><b>1</b> Προϊόν & χρώμα</legend>
+          <div class="chips" id="qGarments"></div>
+          <div class="sw-row sw-row--radio" id="qColors"></div>
+        </fieldset>
+
+        <fieldset class="q-sec">
+          <legend><b>2</b> Θέσεις λογότυπου</legend>
+          <p class="q-help">Επιλέξτε πού θέλετε τύπωμα ή κέντημα και, αν θέλετε, ανεβάστε διαφορετικό αρχείο για κάθε θέση.</p>
+          <div class="pos-list" id="qPositions"></div>
+          <p class="q-small">JPG, PNG, PDF, SVG, AI, EPS έως 10MB το καθένα.</p>
+          <span class="err" data-err="positions"></span>
+        </fieldset>
+
+        <fieldset class="q-sec">
+          <legend><b>3</b> Μεγέθη & ποσότητες</legend>
+          <div class="sizes" id="qSizes"></div>
+          <div class="q-total">Σύνολο: <b id="qTotal">0</b> τεμάχια</div>
+          <span class="err" data-err="sizes"></span>
+        </fieldset>
+
+        <fieldset class="q-sec">
+          <legend><b>4</b> Τεχνική</legend>
+          <div class="chips" id="qTechnique"></div>
+        </fieldset>
+
+        <fieldset class="q-sec">
+          <legend><b>5</b> Στοιχεία επικοινωνίας</legend>
+          <div class="row2">
+            <label class="lbl">Ονοματεπώνυμο *<input class="field" name="name" autocomplete="name"><span class="err" data-err="name"></span></label>
+            <label class="lbl">Εταιρεία / brand<input class="field" name="company" autocomplete="organization"></label>
+          </div>
+          <div class="row2">
+            <label class="lbl">Email *<input class="field" name="email" type="email" autocomplete="email"><span class="err" data-err="email"></span></label>
+            <label class="lbl">Τηλέφωνο<input class="field" name="phone" type="tel" autocomplete="tel"></label>
+          </div>
+          <label class="lbl">Σημειώσεις<textarea class="field" name="message" rows="3" placeholder="Π.χ. κέντημα στο στήθος, τύπωμα στην πλάτη, custom ετικέτα λαιμού, ημερομηνία που το χρειάζεστε…"></textarea></label>
+        </fieldset>
+
+        <label class="check">
+          <input type="checkbox" name="consent">
+          <span>Συμφωνώ να επεξεργαστείτε τα στοιχεία μου για να απαντήσετε στο αίτημά μου, σύμφωνα με την <a href="#" onclick="return false">Πολιτική απορρήτου</a>. *</span>
+        </label>
+        <span class="err" data-err="consent"></span>
+        <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <div class="q-foot">
+          <button type="submit" class="btn btn--primary btn--lg btn--block" id="qSubmit">Αποστολή αιτήματος</button>
+          <p class="form-msg is-err" id="qMsg" role="status" aria-live="polite"></p>
+          <p class="q-small">Απαντάμε σε όλα τα αιτήματα εντός 24 ωρών (εργάσιμες).</p>
+        </div>
+      </form>
+
+      <div class="q-done">
+        <div class="q-done-ic"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5 9-10"/></svg></div>
+        <h2>Ευχαριστούμε!</h2>
+        <p>Λάβαμε το αίτημά σας με κωδικό <b id="qDoneId"></b>.<br>Θα επικοινωνήσουμε μαζί σας εντός 24 ωρών με την προσφορά.</p>
+        <button type="button" class="btn btn--primary" id="qNew">Κλείσιμο</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/catalog.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

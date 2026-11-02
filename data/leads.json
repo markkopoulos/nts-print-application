@@ -1,0 +1,68 @@
+[
+  {
+    "id": "Q-094474",
+    "type": "quote",
+    "createdAt": "2026-10-30T21:18:14.474Z",
+    "status": "new",
+    "name": "Δημήτρης Κωστόπουλος",
+    "company": "Athens Coffee Co",
+    "email": "dimitris@athenscoffee.gr",
+    "phone": "6981122334",
+    "message": "Θέλουμε 2 χρώματα τύπωμα στην πλάτη και μικρό λογότυπο στο στήθος.",
+    "files": [],
+    "garment": "hoodie",
+    "garmentLabel": "Oversized Hoodie",
+    "colorName": "Royal",
+    "colorHex": "#2c3192",
+    "technique": "Μεταξοτυπία",
+    "positionOther": "",
+    "sizes": {
+      "S": 10,
+      "M": 25,
+      "L": 25,
+      "XL": 15
+    },
+    "totalQty": 75,
+    "positions": [
+      {
+        "name": "Μπροστά"
+      },
+      {
+        "name": "Πίσω"
+      }
+    ],
+    "mockup": ""
+  },
+  {
+    "id": "LEAD-1001",
+    "createdAt": "2026-10-30T16:20:09.804Z",
+    "fullName": "Αλέξανδρος Νικολάου",
+    "email": "alex.nikolaou@example.com",
+    "phone": "+30 697 123 4567",
+    "garment": "hoodie",
+    "garmentLabel": "Heavyweight Oversized Hoodie",
+    "color": "#1a1a1a",
+    "colorName": "Matte Black",
+    "quantity": "50-100 τμχ",
+    "placement": "Center Chest (Κέντρο Στήθος)",
+    "notes": "Ενδιαφέρομαι για κέντημα στο στήθος και μεταξοτυπία στην πλάτη για το προσωπικό του cafe/bar μας.",
+    "status": "new",
+    "mockupPreview": ""
+  },
+  {
+    "id": "LEAD-1002",
+    "createdAt": "2026-10-29T20:20:09.805Z",
+    "fullName": "Ελένη Δημητρίου",
+    "email": "eleni.dim@creativelab.gr",
+    "phone": "+30 694 889 0012",
+    "garment": "tshirt",
+    "garmentLabel": "Premium Boxy T-Shirt",
+    "color": "#e5e2da",
+    "colorName": "Sand / Bone White",
+    "quantity": "20-50 τμχ",
+    "placement": "Left Pocket (Μικρό Αριστερά)",
+    "notes": "Merchandise για indie μουσικό συγκρότημα. Θέλουμε 100% οργανικό βαρύ βαμβάκι.",
+    "status": "contacted",
+    "mockupPreview": ""
+  }
+]

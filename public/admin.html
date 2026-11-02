@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATELIER. — Πίνακας Διαχείρισης Αιτημάτων</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- PIN Login Gate -->
+  <div class="admin-login-overlay" id="adminLoginGate">
+    <div class="admin-login-card">
+      <div class="login-brand">ATELIER<span>.</span></div>
+      <div class="login-lock-icon">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2>Πίνακας Ελέγχου</h2>
+      <p>Εισάγετε το PIN διαχειριστή για πρόσβαση στα αιτήματα προσφορών και τα mockups.</p>
+      
+      <form class="pin-form" id="pinForm">
+        <input type="password" id="adminPinInput" class="pin-input" placeholder="PIN (1234)" autocomplete="current-password" autofocus required>
+        <button type="submit" id="pinSubmitBtn" class="btn-login">
+          Είσοδος
+        </button>
+        <div id="pinError" class="pin-error-msg"></div>
+      </form>
+
+      <div class="pin-hint">
+        Προεπιλεγμένο PIN: <strong>1234</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Main Dashboard Content -->
+  <div id="adminMainContent" style="display: none;">
+    <!-- Top Navbar -->
+    <header class="admin-navbar">
+      <div class="wrap admin-navbar-in">
+        <div class="admin-brand-group">
+          <a href="/admin" class="admin-brand">ATELIER<span>.</span></a>
+          <span class="admin-badge">Admin Leads Panel</span>
+        </div>
+
+        <div class="admin-nav-actions">
+          <a href="/" target="_blank" class="nav-btn" title="Προβολή της ιστοσελίδας">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            <span>Ιστοσελίδα</span>
+          </a>
+          <button type="button" id="refreshLeadsBtn" class="nav-btn" title="Ανανέωση δεδομένων">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Ανανέωση</span>
+          </button>
+          <button type="button" id="adminLogoutBtn" class="nav-btn nav-btn--danger">
+            <span>Έξοδος</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap admin-container">
+      <!-- Top Metrics / Stats -->
+      <div class="admin-stats-grid">
+        <div class="stat-metric-card">
+          <div class="stat-icon total">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div class="stat-details">
+            <h3 id="statTotal">0</h3>
+            <p>Συνολικά Αιτήματα</p>
+          </div>
+        </div>
+
+        <div class="stat-metric-card">
+          <div class="stat-icon quotes">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          </div>
+          <div class="stat-details">
+            <h3 id="statQuotes">0</h3>
+            <p>Προσφορές Mockup</p>
+          </div>
+        </div>
+
+        <div class="stat-metric-card">
+          <div class="stat-icon new">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="stat-details">
+            <h3 id="statNew">0</h3>
+            <p>Νέα σε Εκκρεμότητα</p>
+          </div>
+        </div>
+
+        <div class="stat-metric-card">
+          <div class="stat-icon pieces">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <div class="stat-details">
+            <h3 id="statPieces">0</h3>
+            <p>Τεμάχια προς Παραγωγή</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leads Management Section -->
+      <div class="leads-card">
+        <!-- Toolbar -->
+        <div class="leads-toolbar">
+          <div class="filter-tabs-group">
+            <button type="button" class="tab-btn active" data-filter="all">Όλα</button>
+            <button type="button" class="tab-btn" data-filter="quote">Προσφορές</button>
+            <button type="button" class="tab-btn" data-filter="contact">Επικοινωνία</button>
+            <button type="button" class="tab-btn" data-filter="new">Νέα</button>
+          </div>
+
+          <div class="toolbar-search-actions">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="leadSearchInput" class="search-input" placeholder="Αναζήτηση ονόματος, email, κωδικού...">
+            </div>
+            <button type="button" id="exportCsvBtn" class="export-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Εξαγωγή σε CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table of Leads -->
+        <div class="leads-table-wrapper">
+          <table class="leads-table">
+            <thead>
+              <tr>
+                <th>Κωδικός & Ημ/νία</th>
+                <th>Στοιχεία Πελάτη</th>
+                <th>Τύπος & Λεπτομέρειες Παραγγελίας</th>
+                <th>Ποσότητα / Μεγέθη</th>
+                <th style="text-align: center;">Mockup / Αρχεία</th>
+                <th>Κατάσταση</th>
+                <th style="text-align: right;">Ενέργειες</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+              <!-- Dynamically populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Resolution Mockup & Lead Details Inspector Modal -->
+  <div class="mockup-viewer-overlay" id="mockupViewerModal">
+    <div class="mockup-viewer-box">
+      <div class="viewer-header">
+        <div>
+          <h3 id="viewerLeadTitle">Mockup & Στοιχεία Αίτησης</h3>
+          <p id="viewerLeadDetails" class="viewer-subtitle"></p>
+        </div>
+        <button type="button" class="close-viewer-btn" id="closeMockupViewerBtn" aria-label="Κλείσιμο">&times;</button>
+      </div>
+
+      <div class="viewer-body">
+        <div class="viewer-img-container" id="viewerImgContainer">
+          <img id="viewerMockupImage" src="" alt="Full Mockup Image">
+        </div>
+        <div class="viewer-info-grid" id="viewerInfoGrid"></div>
+      </div>
+
+      <div class="viewer-footer">
+        <div class="viewer-files-list" id="viewerFilesList"></div>
+        <a id="downloadLeadMockupLink" href="" download="lead-mockup.png" class="btn-download">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Αποθήκευση Εικόνας (PNG)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
