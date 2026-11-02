@@ -1,5 +1,5 @@
 /**
- * ATELIER. — Admin Panel Client
+ * NtsPrints — Admin Panel Client
  * Handles authenticated API calls with x-admin-pin, lead management,
  * mockup preview modal, status changes and CSV export.
  */

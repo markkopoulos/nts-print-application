@@ -35,11 +35,11 @@ $$('[data-pick]').forEach(el => el.addEventListener('click', e => {
 const heroEl = $('#hero3d');
 if (heroEl && webglAvailable()) {
   const heroColors = [
-    { hex: '#2c3192', logo: 'assets/samples/logo-light.svg', name: 'Royal' },
-    { hex: '#17181c', logo: 'assets/samples/logo-light.svg', name: 'Μαύρο' },
-    { hex: '#f6f6f3', logo: 'assets/samples/logo-dark.svg', name: 'Λευκό' },
-    { hex: '#d9ccb2', logo: 'assets/samples/logo-dark.svg', name: 'Sand' },
-    { hex: '#f4cf1d', logo: 'assets/samples/logo-dark.svg', name: 'Κίτρινο' }
+    { hex: '#2c3192', logo: 'assets/samples/logo-light.svg', name: { el: 'Royal', en: 'Royal' } },
+    { hex: '#17181c', logo: 'assets/samples/logo-light.svg', name: { el: 'Μαύρο', en: 'Black' } },
+    { hex: '#f6f6f3', logo: 'assets/samples/logo-dark.svg', name: { el: 'Λευκό', en: 'White' } },
+    { hex: '#d9ccb2', logo: 'assets/samples/logo-dark.svg', name: { el: 'Sand', en: 'Sand' } },
+    { hex: '#f4cf1d', logo: 'assets/samples/logo-dark.svg', name: { el: 'Κίτρινο', en: 'Yellow' } }
   ];
   const garments = ['hoodie', 'tshirt', 'sweatshirt'];
   const g3d = createGarment3D(heroEl, { garment: 'hoodie', color: heroColors[0].hex, motion: 'spin' });
@@ -51,7 +51,8 @@ if (heroEl && webglAvailable()) {
     b.type = 'button';
     b.className = 'sw sw--sm' + (i === 0 ? ' is-active' : '') + (['#f6f6f3', '#d9ccb2', '#f4cf1d'].includes(c.hex) ? ' sw--light' : '');
     b.style.setProperty('--c', c.hex);
-    b.setAttribute('aria-label', c.name);
+    b.setAttribute('aria-label', I18N.pick(c.name));
+    I18N.onChange(() => b.setAttribute('aria-label', I18N.pick(c.name)));
     b.addEventListener('click', () => {
       $$('.sw', dots).forEach(d => d.classList.remove('is-active'));
       b.classList.add('is-active');
@@ -66,7 +67,8 @@ if (heroEl && webglAvailable()) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'seg-btn' + (i === 0 ? ' is-active' : '');
-    b.textContent = C.garments[k].label;
+    b.dataset.i18nCat = `garments.${k}.label`;
+    b.textContent = I18N.pick(C.garments[k].label);
     b.addEventListener('click', () => {
       $$('.seg-btn', gBtns).forEach(d => d.classList.remove('is-active'));
       b.classList.add('is-active');
@@ -92,6 +94,9 @@ const io = new IntersectionObserver(entries => entries.forEach(en => {
   if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
 }), { threshold: 0.12 });
 $$('.reveal').forEach(el => io.observe(el));
+
+/* Translate anything created dynamically above */
+I18N.apply();
 
 /* Year */
 $$('[data-year]').forEach(el => (el.textContent = new Date().getFullYear()));
