@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" width="360" height="150">
-  <text x="180" y="78" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="62" letter-spacing="6" fill="#16172b">ATELIER<tspan fill="#2c3192">.</tspan></text>
+  <text x="180" y="78" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="46" letter-spacing="4" fill="#16172b">YOUR <tspan fill="#2c3192">LOGO</tspan></text>
   <line x1="92" y1="100" x2="268" y2="100" stroke="#16172b" stroke-width="2" stroke-opacity="0.7"/>
-  <text x="180" y="130" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="15" letter-spacing="9" fill="#16172b" fill-opacity="0.85">CUSTOM APPAREL</text>
+  <text x="180" y="130" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="15" letter-spacing="9" fill="#16172b" fill-opacity="0.85">SAMPLE</text>
 </svg>

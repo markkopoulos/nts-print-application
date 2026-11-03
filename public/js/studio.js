@@ -6,6 +6,7 @@
 import { createGarment3D, webglAvailable } from './garment3d.js';
 
 const C = window.CATALOG;
+const { t, pick } = window.I18N;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
@@ -70,7 +71,8 @@ export function initStudio() {
     y: 0,
     scale: C.garments.hoodie.defaultScale,
     view: '2d',
-    userUploaded: false
+    userUploaded: false,
+    knockState: null // 'removed' | 'nobg' | null
   };
   const listeners = [];
   const emit = () => listeners.forEach(fn => fn(getState()));
@@ -92,8 +94,9 @@ export function initStudio() {
     b.type = 'button';
     b.className = 'sw' + (col.light ? ' sw--light' : '');
     b.style.setProperty('--c', col.hex);
-    b.title = col.name;
-    b.setAttribute('aria-label', col.name);
+    b.title = pick(col.name);
+    b.setAttribute('aria-label', pick(col.name));
+    b.dataset.i18nCatAttr = `title:colors.${i}.name;aria-label:colors.${i}.name`;
     b.dataset.index = i;
     b.addEventListener('click', () => setColor(i));
     colorWrap.appendChild(b);
@@ -103,7 +106,7 @@ export function initStudio() {
     state.colorIndex = i;
     const col = C.colors[i];
     $$('.sw', colorWrap).forEach(s => s.classList.toggle('is-active', +s.dataset.index === i));
-    $('#colorName').textContent = col.name;
+    $('#colorName').textContent = pick(col.name);
     $$('.garment-color-fill', art).forEach(el => (el.style.fill = col.hex));
     stage.classList.toggle('on-light', !!col.light);
     if (g3d) g3d.setColor(col.hex);
@@ -116,8 +119,8 @@ export function initStudio() {
     if (!cfg) return;
     state.garment = key;
     $$('[data-garment]', root).forEach(b => b.classList.toggle('is-active', b.dataset.garment === key));
-    $('#garmentName').textContent = cfg.name;
-    $('#garmentSpec').textContent = cfg.spec;
+    $('#garmentName').textContent = pick(cfg.name);
+    $('#garmentSpec').textContent = pick(cfg.spec);
 
     const b = cfg.printBounds;
     Object.assign(printArea.style, { top: b.top + '%', left: b.left + '%', width: b.width + '%', height: b.height + '%' });
@@ -129,7 +132,7 @@ export function initStudio() {
 
     const btn3d = $('[data-view="3d"]', root);
     btn3d.disabled = !cfg.has3d || !webglAvailable();
-    btn3d.title = cfg.has3d ? 'Περιστρέψτε το ρούχο σε 3D' : 'Η 3D προβολή είναι διαθέσιμη για T-shirt, Hoodie και Φούτερ';
+    btn3d.title = t(cfg.has3d ? 'studio.t3d' : 'studio.no3d');
     if (!cfg.has3d && state.view === '3d') setView('2d');
     if (g3d) { g3d.setGarment(key); sync3d(); }
     emit();
@@ -159,17 +162,23 @@ export function initStudio() {
     }
     state.logo = src;
     logoImg.src = src;
-    knockInfo.textContent = state.rawIsRaster ? (removed ? '· αφαιρέθηκε' : '· δεν βρέθηκε φόντο') : '';
+    state.knockState = state.rawIsRaster ? (removed ? 'removed' : 'nobg') : null;
+    renderKnockInfo();
     if (g3d) g3d.setLogo(src, {});
     emit();
   }
 
+  function renderKnockInfo() {
+    knockInfo.textContent = state.knockState === 'removed' ? t('studio.removed')
+      : state.knockState === 'nobg' ? t('studio.noBg') : '';
+  }
+
   function handleFile(file) {
     if (!file || !file.type.startsWith('image/')) {
-      toast('Ανεβάστε εικόνα PNG, JPG, SVG ή WebP.');
+      toast(t('studio.badFile'));
       return;
     }
-    if (file.size > 10 * 1024 * 1024) { toast('Το αρχείο ξεπερνά τα 10MB.'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast(t('studio.tooBig')); return; }
     const reader = new FileReader();
     reader.onload = e => {
       state.rawLogo = e.target.result;
@@ -293,7 +302,7 @@ export function initStudio() {
     g.fillStyle = '#6b6d80';
     g.font = '500 22px Geologica, system-ui, sans-serif';
     g.textAlign = 'center';
-    g.fillText(`${cfg.name} · ${C.colors[state.colorIndex].name}`, W / 2, H - 34);
+    g.fillText(`${pick(cfg.name)} · ${pick(C.colors[state.colorIndex].name)}`, W / 2, H - 34);
     return c.toDataURL('image/png');
   }
 
@@ -309,8 +318,8 @@ export function initStudio() {
     const cfg = C.garments[state.garment];
     return {
       ...state,
-      garmentLabel: cfg.name,
-      garmentSpec: cfg.spec,
+      garmentLabel: pick(cfg.name),
+      garmentSpec: pick(cfg.spec),
       color: C.colors[state.colorIndex]
     };
   }
@@ -324,6 +333,17 @@ export function initStudio() {
     onChange: fn => listeners.push(fn),
     rawLogoForUpload: () => (state.userUploaded ? state.rawLogo : null)
   };
+
+  // re-label everything that is set from JavaScript when the language changes
+  window.I18N.onChange(() => {
+    const cfg = C.garments[state.garment];
+    $('#garmentName').textContent = pick(cfg.name);
+    $('#garmentSpec').textContent = pick(cfg.spec);
+    $('#colorName').textContent = pick(C.colors[state.colorIndex].name);
+    const btn3d = $('[data-view="3d"]', root);
+    btn3d.title = t(cfg.has3d ? 'studio.t3d' : 'studio.no3d');
+    renderKnockInfo();
+  });
 
   setGarment(state.garment).then(() => { applyLogo(); });
   return api;

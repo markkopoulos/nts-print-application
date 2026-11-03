@@ -5,6 +5,7 @@
 import { toast } from './studio.js';
 
 const C = window.CATALOG;
+const { t, pick } = window.I18N;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
@@ -17,6 +18,9 @@ const readAsDataURL = file => new Promise((res, rej) => {
 
 const ACCEPT = '.jpg,.jpeg,.png,.webp,.pdf,.svg,.ai,.eps';
 const MAX = 10 * 1024 * 1024;
+
+/** Map an HTTP status to a localized message (server messages are Greek-only). */
+const requestError = status => t(status === 429 ? 'err.rate' : status === 400 ? 'err.invalid' : 'err.generic');
 
 const ICON_UP = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>';
 
@@ -32,43 +36,44 @@ export function initQuote(studio) {
   const gWrap = $('#qGarments');
   Object.entries(C.garments).forEach(([key, g]) => {
     gWrap.insertAdjacentHTML('beforeend',
-      `<label class="chip"><input type="radio" name="garment" value="${key}"><span>${g.label}</span></label>`);
+      `<label class="chip"><input type="radio" name="garment" value="${key}"><span data-i18n-cat="garments.${key}.label"></span></label>`);
   });
 
   const cWrap = $('#qColors');
   C.colors.forEach((col, i) => {
     cWrap.insertAdjacentHTML('beforeend',
-      `<label class="sw-radio${col.light ? ' sw--light' : ''}" title="${col.name}">
-         <input type="radio" name="color" value="${i}" aria-label="${col.name}">
+      `<label class="sw-radio${col.light ? ' sw--light' : ''}" data-i18n-cat-attr="title:colors.${i}.name">
+         <input type="radio" name="color" value="${i}" data-i18n-cat-attr="aria-label:colors.${i}.name">
          <span style="--c:${col.hex}"></span>
        </label>`);
   });
 
   const pWrap = $('#qPositions');
+  const defKey = i => (i === 0 ? 'q.fromStudio' : 'q.upload');
   C.positions.forEach((p, i) => {
-    const other = p === 'Άλλο σημείο';
+    // value = Greek name, so saved requests are always consistent for the admin panel
     pWrap.insertAdjacentHTML('beforeend', `
       <div class="pos-row" data-pos="${i}">
-        <label class="chip"><input type="checkbox" name="positions" value="${p}" ${i === 0 ? 'checked' : ''}><span>${p}</span></label>
-        ${other ? `<input class="field pos-other" name="positionOther" maxlength="60" placeholder="Πού; π.χ. πλάι, γιακάς, τσέπη" hidden>` : ''}
+        <label class="chip"><input type="checkbox" name="positions" value="${p.el}" ${i === 0 ? 'checked' : ''}><span data-i18n-cat="positions.${i}"></span></label>
+        ${p.other ? `<input class="field pos-other" name="positionOther" maxlength="60" data-i18n-attr="placeholder:q.otherPh" hidden>` : ''}
         <label class="pos-file" ${i === 0 ? '' : 'hidden'}>
-          ${ICON_UP}<span data-fname>${i === 0 ? 'Από το Mockup Studio' : 'Ανεβάστε αρχείο'}</span>
+          ${ICON_UP}<span data-fname data-i18n="${defKey(i)}"></span>
           <input type="file" accept="${ACCEPT}">
         </label>
-        <button type="button" class="pos-x" hidden aria-label="Αφαίρεση αρχείου">&times;</button>
+        <button type="button" class="pos-x" hidden data-i18n-attr="aria-label:q.removeFile">&times;</button>
       </div>`);
   });
 
   const sWrap = $('#qSizes');
   C.sizes.forEach(s => {
     sWrap.insertAdjacentHTML('beforeend',
-      `<label class="size"><span>${s}</span><input type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-size="${s}" aria-label="Ποσότητα ${s}"></label>`);
+      `<label class="size"><span>${s}</span><input type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-size="${s}" aria-label="${s}"></label>`);
   });
 
   const tWrap = $('#qTechnique');
-  C.techniques.forEach((t, i) => {
+  C.techniques.forEach((tech, i) => {
     tWrap.insertAdjacentHTML('beforeend',
-      `<label class="chip"><input type="radio" name="technique" value="${t}" ${i === C.techniques.length - 1 ? 'checked' : ''}><span>${t}</span></label>`);
+      `<label class="chip"><input type="radio" name="technique" value="${tech.el}" ${i === C.techniques.length - 1 ? 'checked' : ''}><span data-i18n-cat="techniques.${i}"></span></label>`);
   });
 
   /* ---------- Position rows behaviour ---------- */
@@ -80,7 +85,6 @@ export function initQuote(studio) {
     const fname = $('[data-fname]', row);
     const x = $('.pos-x', row);
     const other = $('.pos-other', row);
-    const def = i === 0 ? 'Από το Mockup Studio' : 'Ανεβάστε αρχείο';
 
     chk.addEventListener('change', () => {
       fileLabel.hidden = !chk.checked;
@@ -91,8 +95,9 @@ export function initQuote(studio) {
     fileInput.addEventListener('change', () => {
       const f = fileInput.files[0];
       if (!f) return;
-      if (f.size > MAX) { toast('Το αρχείο ξεπερνά τα 10MB.'); fileInput.value = ''; return; }
+      if (f.size > MAX) { toast(t('studio.tooBig')); fileInput.value = ''; return; }
       files[i] = f;
+      fname.removeAttribute('data-i18n');
       fname.textContent = f.name;
       fileLabel.classList.add('has-file');
       x.hidden = false;
@@ -100,7 +105,8 @@ export function initQuote(studio) {
     function clear() {
       delete files[i];
       fileInput.value = '';
-      fname.textContent = def;
+      fname.setAttribute('data-i18n', defKey(i));
+      fname.textContent = t(defKey(i));
       fileLabel.classList.remove('has-file');
       x.hidden = true;
     }
@@ -127,13 +133,15 @@ export function initQuote(studio) {
     const g = C.garments[F('garment').value] || {};
     const positions = $$('input[name=positions]:checked', pWrap).map(i => i.value);
 
-    $('#sumGarment').textContent = g.name || '—';
-    $('#sumColor').innerHTML = color ? `<i style="--c:${color.hex}"></i>${color.name}` : '—';
-    $('#sumPositions').textContent = positions.length ? positions.join(', ') : '—';
-    $('#sumQty').textContent = total ? `${total} τεμ.` : '—';
-    $('#sumTech').textContent = F('technique').value || '—';
-    $('#qTitle').textContent = g.name || '';
-    $('#qSpec').textContent = g.spec || '';
+    const posLabel = v => { const p = C.positions.find(x => x.el === v); return p ? pick(p) : v; };
+    const tech = C.techniques.find(x => x.el === F('technique').value);
+    $('#sumGarment').textContent = g.name ? pick(g.name) : '—';
+    $('#sumColor').innerHTML = color ? `<i style="--c:${color.hex}"></i>${pick(color.name)}` : '—';
+    $('#sumPositions').textContent = positions.length ? positions.map(posLabel).join(', ') : '—';
+    $('#sumQty').textContent = total ? `${total} ${t('q.pcs')}` : '—';
+    $('#sumTech').textContent = tech ? pick(tech) : '—';
+    $('#qTitle').textContent = g.name ? pick(g.name) : '';
+    $('#qSpec').textContent = g.spec ? pick(g.spec) : '';
 
     // progress: product, positions, sizes, contact, consent
     const steps = [
@@ -208,11 +216,11 @@ export function initQuote(studio) {
     const { total, sizes } = totals();
     const positions = $$('input[name=positions]:checked', pWrap);
     let ok = true;
-    if (!positions.length) { setErr('positions', 'Επιλέξτε τουλάχιστον μία θέση.'); ok = false; }
-    if (!total) { setErr('sizes', 'Συμπληρώστε ποσότητα σε τουλάχιστον ένα μέγεθος.'); ok = false; }
-    if (!F('name').value.trim()) { setErr('name', 'Υποχρεωτικό πεδίο.'); ok = false; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(F('email').value.trim())) { setErr('email', 'Συμπληρώστε έγκυρο email.'); ok = false; }
-    if (!F('consent').checked) { setErr('consent', 'Απαιτείται αποδοχή.'); ok = false; }
+    if (!positions.length) { setErr('positions', t('err.pos')); ok = false; }
+    if (!total) { setErr('sizes', t('err.sizes')); ok = false; }
+    if (!F('name').value.trim()) { setErr('name', t('err.required')); ok = false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(F('email').value.trim())) { setErr('email', t('err.email')); ok = false; }
+    if (!F('consent').checked) { setErr('consent', t('err.consent')); ok = false; }
     if (!ok) {
       const first = $('.err:not(:empty)', form);
       first?.closest('fieldset, .field-wrap, label')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -234,8 +242,8 @@ export function initQuote(studio) {
       const payload = {
         type: 'quote',
         garment: F('garment').value,
-        garmentLabel: g.name,
-        colorName: color.name,
+        garmentLabel: g.name.el,
+        colorName: color.name.el,
         colorHex: color.hex,
         technique: F('technique').value,
         positions: posPayload,
@@ -258,12 +266,12 @@ export function initQuote(studio) {
         body: JSON.stringify(payload)
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) throw new Error(data.error || 'Αποτυχία αποστολής.');
+      if (!res.ok || !data.success) throw new Error(requestError(res.status));
 
       $('#qDoneId').textContent = data.leadId;
       modal.classList.add('is-done');
     } catch (err) {
-      $('#qMsg').textContent = err.message || 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.';
+      $('#qMsg').textContent = err.message || t('err.generic');
     } finally {
       btn.disabled = false;
       btn.classList.remove('is-loading');
@@ -276,7 +284,9 @@ export function initQuote(studio) {
     $$('.pos-row', pWrap).forEach((row, i) => {
       $('.pos-file', row).hidden = i !== 0;
       $('.pos-file', row).classList.remove('has-file');
-      $('[data-fname]', row).textContent = i === 0 ? 'Από το Mockup Studio' : 'Ανεβάστε αρχείο';
+      const fn = $('[data-fname]', row);
+      fn.setAttribute('data-i18n', defKey(i));
+      fn.textContent = t(defKey(i));
       $('.pos-x', row).hidden = true;
     });
     modal.classList.remove('is-done');
@@ -293,7 +303,9 @@ export function initContact() {
 
   fileInput.addEventListener('change', () => {
     const f = fileInput.files[0];
-    $('[data-fname]', form).textContent = f ? f.name : 'Επισυνάψτε το logo ή το σχέδιό σας';
+    const fn = $('[data-fname]', form);
+    if (f) { fn.removeAttribute('data-i18n'); fn.textContent = f.name; }
+    else { fn.setAttribute('data-i18n', 'f.attach'); fn.textContent = t('f.attach'); }
     fileLabel.classList.toggle('has-file', !!f);
   });
 
@@ -304,12 +316,12 @@ export function initContact() {
     msg.textContent = '';
     if (!form.checkValidity()) {
       msg.classList.add('is-err');
-      msg.textContent = 'Συμπληρώστε τα υποχρεωτικά πεδία (*) και αποδεχτείτε την πολιτική απορρήτου.';
+      msg.textContent = t('err.contactRequired');
       form.reportValidity();
       return;
     }
     const f = fileInput.files[0];
-    if (f && f.size > MAX) { msg.classList.add('is-err'); msg.textContent = 'Το αρχείο ξεπερνά τα 10MB.'; return; }
+    if (f && f.size > MAX) { msg.classList.add('is-err'); msg.textContent = t('studio.tooBig'); return; }
 
     const btn = $('button[type=submit]', form);
     btn.disabled = true;
@@ -333,12 +345,14 @@ export function initContact() {
         })
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) throw new Error(data.error || 'Αποτυχία αποστολής.');
+      if (!res.ok || !data.success) throw new Error(requestError(res.status));
       form.reset();
-      $('[data-fname]', form).textContent = 'Επισυνάψτε το logo ή το σχέδιό σας';
+      const fn = $('[data-fname]', form);
+      fn.setAttribute('data-i18n', 'f.attach');
+      fn.textContent = t('f.attach');
       fileLabel.classList.remove('has-file');
       msg.classList.add('is-ok');
-      msg.textContent = `Ευχαριστούμε! Λάβαμε το μήνυμά σας (#${data.leadId}) και θα επικοινωνήσουμε σύντομα.`;
+      msg.textContent = t('ok.contact', { id: data.leadId });
     } catch (err) {
       msg.classList.add('is-err');
       msg.textContent = err.message;

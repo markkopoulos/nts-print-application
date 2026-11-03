@@ -1,6 +1,15 @@
-# ATELIER. — Custom Apparel Brand Showcase, 3D Mockup Studio & Quote System
+# NtsPrints — Custom Apparel Brand Showcase, 3D Mockup Studio & Quote System
 
 Κομψή, επαγγελματική web εφαρμογή / ιστοσελίδα για custom apparel brand (ρούχα με δικό σας λογότυπο, μεταξοτυπία & κέντημα), εμπνευσμένη από το design system & τη stepped φόρμα προσφορών του impressink.gr, με υποστήριξη 3D διαδραστικού ρούχου και Admin Panel.
+
+---
+
+## 🌐 Γλώσσες (EL / EN)
+
+- Η σελίδα είναι δίγλωσση με διακόπτη **EL | EN** στην κεφαλίδα· η επιλογή αποθηκεύεται στον browser (`localStorage`, κλειδί `nts-lang`).
+- Τα ελληνικά κείμενα βρίσκονται απευθείας στο `public/index.html` (προεπιλογή και καλύτερο για SEO)· τα αγγλικά στο λεξικό `EN` του `public/js/i18n.js`. Κάθε στοιχείο έχει `data-i18n="κλειδί"` (ή `data-i18n-html` / `data-i18n-attr`).
+- Ονόματα ρούχων, χρωμάτων, θέσεων και μεθόδων είναι δίγλωσσα στο `public/js/catalog.js`. Τα αιτήματα αποθηκεύονται **πάντα στα ελληνικά**, ώστε το Admin Panel να είναι ενιαίο.
+- Τα κείμενα βασίζονται στο https://www.nts-prints.gr/ (επικοινωνία: info.ntsprints@gmail.com · Instagram @ntsp.rintsofficial).
 
 ---
 
