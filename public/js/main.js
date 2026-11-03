@@ -1,6 +1,8 @@
 import { initStudio } from './studio.js';
 import { initQuote, initContact } from './quote.js';
 import { createGarment3D, webglAvailable } from './garment3d.js';
+import { initLogin } from './login.js';
+import { initAnimations } from './animations.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -23,6 +25,7 @@ $$('.nav a').forEach(a => a.addEventListener('click', () => header.classList.rem
 const studio = initStudio();
 initQuote(studio);
 initContact();
+initLogin();
 
 /* Category cards → preselect garment in studio */
 $$('[data-pick]').forEach(el => el.addEventListener('click', e => {
@@ -41,7 +44,7 @@ if (heroEl && webglAvailable()) {
     { hex: '#d9ccb2', logo: 'assets/samples/logo-dark.svg', name: { el: 'Sand', en: 'Sand' } },
     { hex: '#f4cf1d', logo: 'assets/samples/logo-dark.svg', name: { el: 'Κίτρινο', en: 'Yellow' } }
   ];
-  const garments = ['hoodie', 'tshirt', 'sweatshirt'];
+  const garments = ['hoodie', 'tshirt', 'sweatshirt', 'cap'];
   const g3d = createGarment3D(heroEl, { garment: 'hoodie', color: heroColors[0].hex, motion: 'spin' });
   g3d.setLogo(heroColors[0].logo, { bounds: C.garments.hoodie.printBounds, x: 0, y: -0.05, scale: 0.62 });
 
@@ -73,7 +76,7 @@ if (heroEl && webglAvailable()) {
       $$('.seg-btn', gBtns).forEach(d => d.classList.remove('is-active'));
       b.classList.add('is-active');
       g3d.setGarment(k);
-      g3d.setLogoTransform({ bounds: C.garments[k].printBounds, x: 0, y: k === 'tshirt' ? -0.15 : -0.05, scale: 0.6 });
+      g3d.setLogoTransform({ bounds: C.garments[k].printBounds, x: 0, y: k === 'tshirt' ? -0.15 : -0.05, scale: k === 'cap' ? 0.7 : 0.6 });
     });
     gBtns.appendChild(b);
   });
@@ -89,11 +92,15 @@ $$('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
   $$('.work').forEach(w => { w.hidden = !(f === 'all' || w.dataset.cat === f); });
 }));
 
-/* Reveal on scroll */
-const io = new IntersectionObserver(entries => entries.forEach(en => {
-  if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
-}), { threshold: 0.12 });
-$$('.reveal').forEach(el => io.observe(el));
+/* Motion: anime.js timelines; plain CSS fade-in as fallback (or when reduced motion is requested) */
+let animated = false;
+try { animated = initAnimations(); } catch (e) { console.warn('animations disabled:', e); }
+if (!animated) {
+  const io = new IntersectionObserver(entries => entries.forEach(en => {
+    if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
+  }), { threshold: 0.12 });
+  $$('.reveal').forEach(el => io.observe(el));
+}
 
 /* Translate anything created dynamically above */
 I18N.apply();

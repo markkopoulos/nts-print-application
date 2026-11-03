@@ -258,6 +258,19 @@
     'q.qtyAria': 'Quantity',
     'q.pcs': 'pcs',
 
+    /* theme + admin login */
+    'theme.aria': 'Toggle dark mode',
+    'login.aria': 'Admin login',
+    'login.dash': 'Open the admin dashboard',
+    'login.title': 'Admin login',
+    'login.p': 'Sign in to see quote requests and contact form messages.',
+    'login.user': 'Username',
+    'login.pass': 'Password',
+    'login.submit': 'Sign in',
+    'err.login': 'Invalid username or password.',
+    'err.loginRate': 'Too many failed attempts. Try again in 15 minutes.',
+    'err.loginFields': 'Enter your username and password.',
+
     /* JS-only messages */
     'err.pos': 'Choose at least one position.',
     'err.sizes': 'Enter a quantity for at least one size.',
@@ -285,6 +298,10 @@
     'q.otherPh': 'Πού; π.χ. πλάι, γιακάς, τσέπη',
     'q.qtyAria': 'Ποσότητα',
     'q.pcs': 'τεμ.',
+    'login.dash': 'Άνοιγμα πίνακα ελέγχου',
+    'err.login': 'Λάθος όνομα χρήστη ή κωδικός.',
+    'err.loginRate': 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε 15 λεπτά.',
+    'err.loginFields': 'Συμπληρώστε όνομα χρήστη και κωδικό.',
     'err.pos': 'Επιλέξτε τουλάχιστον μία θέση.',
     'err.sizes': 'Συμπληρώστε ποσότητα σε τουλάχιστον ένα μέγεθος.',
     'err.required': 'Υποχρεωτικό πεδίο.',
