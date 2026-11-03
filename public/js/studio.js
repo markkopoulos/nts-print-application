@@ -138,6 +138,11 @@ export function initStudio() {
     emit();
   }
 
+  // Garment picker buttons (T-shirt / Hoodie / Sweatshirt / Cap)
+  $$('.gp[data-garment]', root).forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.garment !== state.garment) setGarment(b.dataset.garment);
+  }));
+
   /* ---------- Render logo transform ---------- */
   function render() {
     logoImg.style.width = (state.scale * 100) + '%';

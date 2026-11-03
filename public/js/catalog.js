@@ -44,7 +44,7 @@ window.CATALOG = {
       svg: 'assets/apparel/cap.svg',
       printBounds: { top: 27, left: 36, width: 28, height: 22 },
       defaultScale: 0.7,
-      has3d: false
+      has3d: true
     }
   },
 

@@ -1,109 +1,91 @@
 /**
  * NtsPrints — Admin Panel Client
- * Handles authenticated API calls with x-admin-pin, lead management,
- * mockup preview modal, status changes and CSV export.
+ * Username/password login (HttpOnly session cookie set by the server),
+ * lead management, submissions chart, mockup preview modal, status changes and CSV export.
  */
 
 let allLeads = [];
 let currentFilter = 'all';
-
-function getPin() {
-  return sessionStorage.getItem('admin_pin') || '';
-}
-
-function setPin(pin) {
-  sessionStorage.setItem('admin_pin', pin);
-}
-
-function clearPin() {
-  sessionStorage.removeItem('admin_pin');
-}
+let lastDaily = [];
 
 async function adminFetch(url, options = {}) {
-  const pin = getPin();
-  const headers = Object.assign({}, options.headers || {}, {
-    'x-admin-pin': pin
-  });
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(url, { credentials: 'same-origin', ...options });
   if (res.status === 401) {
-    clearPin();
     showLogin();
     throw new Error('Unauthorized');
   }
   return res;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setupListeners();
-  if (getPin()) {
-    verifyAndLoad(getPin());
-  } else {
-    showLogin();
-  }
+  try {
+    const res = await fetch('/api/admin/session', { credentials: 'same-origin' });
+    const json = await res.json();
+    if (json.authenticated) return enterDashboard();
+  } catch (e) { /* fall through to login */ }
+  showLogin();
 });
 
 function showLogin() {
-  const gate = document.getElementById('adminLoginGate');
-  const main = document.getElementById('adminMainContent');
-  if (gate) gate.style.display = 'flex';
-  if (main) main.style.display = 'none';
+  document.getElementById('adminLoginGate').style.display = 'flex';
+  document.getElementById('adminMainContent').style.display = 'none';
+  setTimeout(() => document.getElementById('adminUser')?.focus(), 50);
 }
 
 function showMain() {
-  const gate = document.getElementById('adminLoginGate');
-  const main = document.getElementById('adminMainContent');
-  if (gate) gate.style.display = 'none';
-  if (main) main.style.display = 'block';
+  document.getElementById('adminLoginGate').style.display = 'none';
+  document.getElementById('adminMainContent').style.display = 'block';
 }
 
-async function verifyAndLoad(pin) {
-  const pinError = document.getElementById('pinError');
+function enterDashboard() {
+  showMain();
+  fetchStats();
+  fetchLeads();
+}
+
+async function login(username, password) {
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('loginSubmitBtn');
+  err.style.display = 'none';
+  btn.disabled = true;
   try {
     const res = await fetch('/api/admin/login', {
       method: 'POST',
-      headers: { 'x-admin-pin': pin }
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
     });
-    if (!res.ok) {
-      if (pinError) {
-        pinError.textContent = 'Λάθος PIN. Δοκιμάστε ξανά (προεπιλογή: 1234).';
-        pinError.style.display = 'block';
-      }
-      clearPin();
-      showLogin();
+    if (res.ok) {
+      document.getElementById('adminPass').value = '';
+      enterDashboard();
       return;
     }
-    setPin(pin);
-    if (pinError) pinError.style.display = 'none';
-    showMain();
-    fetchStats();
-    fetchLeads();
-  } catch (err) {
-    if (pinError) {
-      pinError.textContent = 'Σφάλμα σύνδεσης με τον διακομιστή.';
-      pinError.style.display = 'block';
-    }
+    err.textContent = res.status === 429
+      ? 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε 15 λεπτά.'
+      : 'Λάθος όνομα χρήστη ή κωδικός.';
+    err.style.display = 'block';
+  } catch (e) {
+    err.textContent = 'Σφάλμα σύνδεσης με τον διακομιστή.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
   }
 }
 
 function setupListeners() {
-  const pinForm = document.getElementById('pinForm');
-  const pinInput = document.getElementById('adminPinInput');
+  document.getElementById('loginForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const u = document.getElementById('adminUser').value.trim();
+    const p = document.getElementById('adminPass').value;
+    if (u && p) login(u, p);
+  });
 
-  if (pinForm) {
-    pinForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const val = pinInput.value.trim();
-      if (val) verifyAndLoad(val);
-    });
-  }
-
-  const logoutBtn = document.getElementById('adminLogoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      clearPin();
-      location.reload();
-    });
-  }
+  document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
+    try { await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' }); } catch (e) { /* ignore */ }
+    allLeads = [];
+    showLogin();
+  });
 
   const refreshBtn = document.getElementById('refreshLeadsBtn');
   if (refreshBtn) {
@@ -145,6 +127,110 @@ function setupListeners() {
       if (e.target === viewerModal) viewerModal.classList.remove('active');
     });
   }
+
+  // redraw the chart when its width changes
+  const wrap = document.getElementById('chartWrap');
+  if (wrap && 'ResizeObserver' in window) {
+    let w = 0;
+    new ResizeObserver(entries => {
+      const nw = Math.round(entries[0].contentRect.width);
+      if (nw && nw !== w) { w = nw; renderChart(lastDaily); }
+    }).observe(wrap);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Submissions chart: stacked bars per day (quotes + contact messages) */
+/* ------------------------------------------------------------------ */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const fmtDay = iso => new Date(iso + 'T12:00:00').toLocaleDateString('el-GR', { day: 'numeric', month: 'short' });
+
+function svgEl(tag, attrs, parent) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  if (parent) parent.appendChild(el);
+  return el;
+}
+
+/** Bar segment path: square at the bottom, optional 4px rounded top */
+function barPath(x, y, w, h, roundTop) {
+  if (h <= 0) return '';
+  const r = roundTop ? Math.min(4, w / 2, h) : 0;
+  return `M${x},${y + h}V${y + r}` + (r ? `Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}` : `H${x + w}`) + `V${y + h}Z`;
+}
+
+function renderChart(daily) {
+  const svg = document.getElementById('submissionsChart');
+  const wrap = document.getElementById('chartWrap');
+  const tip = document.getElementById('chartTip');
+  if (!svg || !wrap || !daily || !daily.length) return;
+
+  const W = Math.max(280, wrap.clientWidth);
+  const H = 220;
+  const m = { t: 12, r: 8, b: 26, l: 30 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.innerHTML = '';
+
+  const maxTotal = Math.max(...daily.map(d => d.quote + d.contact));
+  const yMax = Math.max(4, Math.ceil(maxTotal / 2) * 2);
+  const y = v => m.t + ih - (v / yMax) * ih;
+  const band = iw / daily.length;
+  const bw = Math.max(3, Math.min(18, band * 0.62));
+
+  // recessive grid + y labels
+  const grid = svgEl('g', { class: 'c-grid' }, svg);
+  [0, yMax / 2, yMax].forEach(v => {
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }, grid);
+    const t = svgEl('text', { x: m.l - 8, y: y(v) + 4, 'text-anchor': 'end', class: 'c-axis' }, grid);
+    t.textContent = v;
+  });
+
+  // x labels: every 5th day + today
+  daily.forEach((d, i) => {
+    if (i % 5 !== 4 && i !== daily.length - 1) return;
+    const t = svgEl('text', { x: m.l + band * i + band / 2, y: H - 6, 'text-anchor': 'middle', class: 'c-axis' }, svg);
+    t.textContent = i === daily.length - 1 ? 'Σήμερα' : fmtDay(d.date);
+  });
+
+  const hl = svgEl('rect', { class: 'c-hl', y: m.t, height: ih, width: band, x: -999 }, svg);
+  const bars = svgEl('g', {}, svg);
+  daily.forEach((d, i) => {
+    const x = m.l + band * i + (band - bw) / 2;
+    const hq = d.quote ? (d.quote / yMax) * ih : 0;
+    const hc = d.contact ? (d.contact / yMax) * ih : 0;
+    const gap = hq && hc ? 2 : 0; // 2px surface gap between stacked segments
+    if (hq) svgEl('path', { class: 'c-bar c-bar--quote', d: barPath(x, m.t + ih - hq, bw, hq, !hc) }, bars);
+    if (hc) svgEl('path', { class: 'c-bar c-bar--contact', d: barPath(x, m.t + ih - hq - gap - hc, bw, hc, true) }, bars);
+  });
+
+  // hover layer: full-height hit targets per day
+  const hits = svgEl('g', {}, svg);
+  daily.forEach((d, i) => {
+    const r = svgEl('rect', { x: m.l + band * i, y: m.t, width: band, height: ih, fill: 'transparent' }, hits);
+    const show = () => {
+      hl.setAttribute('x', m.l + band * i);
+      tip.innerHTML = `<b>${fmtDay(d.date)}</b>
+        <span><i class="sw sw--quote"></i>Προσφορές <b>${d.quote}</b></span>
+        <span><i class="sw sw--contact"></i>Μηνύματα <b>${d.contact}</b></span>
+        <span class="tip-total">Σύνολο <b>${d.quote + d.contact}</b></span>`;
+      tip.hidden = false;
+      const left = Math.min(Math.max(m.l + band * i + band / 2, 80), W - 80);
+      tip.style.left = left + 'px';
+    };
+    r.addEventListener('mouseenter', show);
+    r.addEventListener('touchstart', show, { passive: true });
+  });
+  svg.onmouseleave = () => { tip.hidden = true; hl.setAttribute('x', -999); };
+
+  // accessible table view (days with activity, newest first)
+  const rows = daily.filter(d => d.quote + d.contact > 0).reverse();
+  document.getElementById('chartTableBody').innerHTML = rows.length
+    ? rows.map(d => `<tr><td>${fmtDay(d.date)}</td><td>${d.quote}</td><td>${d.contact}</td><td><b>${d.quote + d.contact}</b></td></tr>`).join('')
+    : '<tr><td colspan="4">Καμία υποβολή τις τελευταίες 30 ημέρες.</td></tr>';
+  document.getElementById('chartTotal30').textContent = daily.reduce((s, d) => s + d.quote + d.contact, 0);
 }
 
 async function fetchStats() {
@@ -157,6 +243,9 @@ async function fetchStats() {
       document.getElementById('statQuotes').textContent = d.quotes || 0;
       document.getElementById('statNew').textContent = d.newLeads || 0;
       document.getElementById('statPieces').textContent = d.pieces || 0;
+      document.getElementById('statWeek').textContent = d.lastWeek || 0;
+      lastDaily = d.daily || [];
+      renderChart(lastDaily);
     }
   } catch (err) {
     console.error('Stats error:', err);
@@ -483,7 +572,7 @@ function exportToCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `atelier-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `ntsprints-leads-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

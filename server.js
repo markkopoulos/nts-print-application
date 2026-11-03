@@ -4,8 +4,9 @@
  * and uploaded files in data/uploads/.
  *
  * Environment variables (optional):
- *   PORT       – port to listen on (Hostinger sets this automatically)
- *   ADMIN_PIN  – PIN for the admin panel (default: 1234)
+ *   PORT            – port to listen on (Hostinger sets this automatically)
+ *   ADMIN_USER      – admin username (default: admin)
+ *   ADMIN_PASSWORD  – admin password (falls back to ADMIN_PIN, then to 1234 — change it!)
  */
 
 const express = require('express');
@@ -15,7 +16,11 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PIN = String(process.env.ADMIN_PIN || '1234');
+const ADMIN_USER = String(process.env.ADMIN_USER || 'admin');
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || process.env.ADMIN_PIN || '1234');
+const USING_DEFAULT_PASSWORD = !process.env.ADMIN_PASSWORD && !process.env.ADMIN_PIN;
+const SESSION_COOKIE = 'nts_admin';
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 const DATA_DIR = path.join(__dirname, 'data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
@@ -33,9 +38,11 @@ const ALLOWED_EXT = {
 };
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1); // Hostinger runs the app behind a proxy (needed for req.ip / req.secure)
 app.use(express.json({ limit: '60mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
-app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
+// Customer uploads (logos, mockups) are only visible to a logged-in admin
+app.use('/uploads', requireAdmin, express.static(UPLOAD_DIR, { maxAge: '1h' }));
 
 /* ------------------------------------------------------------------ */
 /* Storage helpers                                                     */
@@ -227,17 +234,85 @@ app.post('/api/leads', (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
-/* Admin API (PIN protected via x-admin-pin header)                    */
+/* Admin auth: username + password -> HttpOnly session cookie          */
 /* ------------------------------------------------------------------ */
+const sessions = new Map(); // token -> expiry timestamp (in memory; a restart logs everyone out)
+
+function parseCookies(req) {
+  const out = {};
+  String(req.headers.cookie || '').split(';').forEach(part => {
+    const i = part.indexOf('=');
+    if (i > 0) out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim());
+  });
+  return out;
+}
+
+/** Constant-time comparison that also hides the length of the secret */
+function safeEqual(a, b) {
+  const ha = crypto.createHash('sha256').update(String(a)).digest();
+  const hb = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
+
+function setSessionCookie(req, res, token, maxAgeSec) {
+  const secure = req.secure ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
+}
+
+function validSession(req) {
+  const token = parseCookies(req)[SESSION_COOKIE];
+  if (!token) return null;
+  const exp = sessions.get(token);
+  if (!exp || exp < Date.now()) { sessions.delete(token); return null; }
+  return token;
+}
+
 function requireAdmin(req, res, next) {
-  const pin = String(req.get('x-admin-pin') || '');
-  const a = Buffer.from(pin);
-  const b = Buffer.from(ADMIN_PIN);
-  if (a.length === b.length && crypto.timingSafeEqual(a, b)) return next();
+  if (validSession(req)) return next();
   return res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-app.post('/api/admin/login', requireAdmin, (req, res) => res.json({ success: true }));
+// Brute-force protection: max 10 failed logins per IP per 15 minutes
+const loginFails = new Map();
+function loginBlocked(ip) {
+  const now = Date.now();
+  const arr = (loginFails.get(ip) || []).filter(t => now - t < 15 * 60 * 1000);
+  loginFails.set(ip, arr);
+  return arr.length >= 10;
+}
+
+app.post('/api/admin/login', (req, res) => {
+  if (loginBlocked(req.ip)) {
+    return res.status(429).json({ success: false, error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+  const b = req.body || {};
+  const userOk = safeEqual(clean(b.username, 100), ADMIN_USER);
+  const passOk = safeEqual(typeof b.password === 'string' ? b.password.slice(0, 200) : '', ADMIN_PASSWORD);
+  if (!(userOk && passOk)) {
+    loginFails.get(req.ip).push(Date.now());
+    return res.status(401).json({ success: false, error: 'Invalid username or password.' });
+  }
+  loginFails.delete(req.ip);
+  // drop expired sessions now and then
+  const now = Date.now();
+  for (const [t, exp] of sessions) if (exp < now) sessions.delete(t);
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions.set(token, now + SESSION_TTL_MS);
+  setSessionCookie(req, res, token, SESSION_TTL_MS / 1000);
+  res.json({ success: true, user: ADMIN_USER });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  const token = validSession(req);
+  if (token) sessions.delete(token);
+  setSessionCookie(req, res, '', 0);
+  res.json({ success: true });
+});
+
+app.get('/api/admin/session', (req, res) => {
+  const ok = !!validSession(req);
+  res.json({ success: true, authenticated: ok, user: ok ? ADMIN_USER : null });
+});
 
 app.get('/api/leads', requireAdmin, (req, res) => {
   const leads = readLeads();
@@ -256,7 +331,22 @@ app.get('/api/stats', requireAdmin, (req, res) => {
       contacted: leads.filter(l => l.status === 'contacted').length,
       completed: leads.filter(l => l.status === 'completed').length,
       lastWeek: leads.filter(l => new Date(l.createdAt).getTime() > weekAgo).length,
-      pieces: leads.reduce((s, l) => s + (l.totalQty || 0), 0)
+      pieces: leads.reduce((s, l) => s + (l.totalQty || 0), 0),
+      // submissions per day for the last 30 days (oldest first), split by form type
+      daily: (() => {
+        const DAY = 864e5;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const first = today.getTime() - 29 * DAY;
+        const days = Array.from({ length: 30 }, (_, i) => ({
+          date: new Date(first + i * DAY).toISOString().slice(0, 10), quote: 0, contact: 0
+        }));
+        leads.forEach(l => {
+          const i = Math.floor((new Date(l.createdAt).getTime() - first) / DAY);
+          if (i >= 0 && i < 30) days[i][l.type === 'contact' ? 'contact' : 'quote']++;
+        });
+        return days;
+      })()
     }
   });
 });
@@ -297,4 +387,7 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 ensureStorage();
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}  (admin: /admin)`);
+  if (USING_DEFAULT_PASSWORD) {
+    console.warn('WARNING: admin login is using the default password. Set ADMIN_USER and ADMIN_PASSWORD environment variables.');
+  }
 });
