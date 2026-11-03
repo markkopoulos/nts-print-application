@@ -994,3 +994,30 @@ body.admin-body {
 .chart-table table { width: 100%; max-width: 520px; border-collapse: collapse; margin-top: 10px; }
 .chart-table th, .chart-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); }
 .chart-table th { color: var(--mut); font-weight: 500; }
+
+/* ==========================================================================
+   Traffic & funnel card
+   ========================================================================== */
+.period-tabs { flex-shrink: 0; }
+.kpi-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 6px 0 18px; }
+.kpi { background: var(--soft); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+.kpi b { display: block; font-size: 26px; font-weight: 600; color: var(--ink); letter-spacing: -.02em; }
+.kpi span { font-size: 12px; color: var(--mut); }
+.funnel-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.funnel { list-style: none; display: grid; gap: 12px; }
+.f-label { display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: var(--ink-2); margin-bottom: 5px; }
+.f-label span { flex: 1; }
+.f-label b { color: var(--ink); font-weight: 600; font-size: 14px; }
+.f-label em { font-style: normal; color: var(--mut); width: 52px; text-align: right; }
+.f-track { height: 12px; background: var(--soft-2); border-radius: 4px; overflow: hidden; }
+.f-bar { height: 100%; background: var(--series-quote); border-radius: 0 4px 4px 0; transition: width .6s cubic-bezier(.2, .7, .2, 1); }
+.refs h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+.refs ul { list-style: none; display: grid; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.refs li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.refs li b { color: var(--ink); }
+.refs li.muted { color: var(--mut); border: 0; }
+.storage-note { font-size: 12px; color: var(--mut); padding: 0 0 28px; word-break: break-all; }
+@media (max-width: 800px) {
+  .funnel-grid, .kpi-row { grid-template-columns: 1fr; }
+}
+.storage-note.is-warn { color: var(--err); font-weight: 500; }

@@ -44,9 +44,14 @@
   - Επιθεώρηση του mockup σε πλήρη ανάλυση + λήψη PNG + απευθείας download των συνημμένων αρχείων του πελάτη (vector/PDF/PNG).
   - Ενημέρωση κατάστασης (Νέο, Σε εξέλιξη, Ολοκληρώθηκε).
   - Εξαγωγή σε αρχείο CSV με ελληνική κωδικοποίηση (UTF-8 BOM για άνοιγμα σε Excel/Numbers).
-- **Zero-Config Database**:
-  - Αποθήκευση σε `data/leads.json` και αρχεία σε `data/uploads/`.
-  - Δεν απαιτείται MySQL ή PostgreSQL — έτοιμο να τρέξει άμεσα παντού.
+- **Θέσεις τυπώματος στο Mockup Studio**: Μπροστά, Στήθος, Πίσω, Μανίκι — κάθε θέση με δικό της logo, μέγεθος και σημείο. Εναλλαγή Μπροστά/Πίσω (2D) και αυτόματη περιστροφή στο 3D. Το mockup της προσφοράς δείχνει μπροστά και πίσω, και η φόρμα προσφοράς συμπληρώνεται αυτόματα με τις θέσεις και τα αρχεία τους.
+- **Εμφάνιση κεντήματος**: Διακόπτης «Τύπωμα / Κέντημα». Το logo μετατρέπεται σε κέντημα (έως 8 χρώματα κλωστής, satin περίγραμμα, tatami γέμισμα, ανάγλυφο). Στο 3D το κέντημα έχει πραγματικό ανάγλυφο (bump map). Συγχρονίζεται με την επιλογή τεχνικής στη φόρμα προσφοράς.
+- **Στατιστικά επισκεψιμότητας (χωρίς cookies)**: Δικό μας, ιδιωτικό analytics — καμία τρίτη υπηρεσία. Ο επισκέπτης αναγνωρίζεται μόνο με ένα hash που αλλάζει κάθε μέρα (δεν αποθηκεύεται IP). Στο Admin: επισκέπτες, ποσοστό προσφορών, funnel (σελίδα → Studio → logo → φόρμα → αποστολή) και πηγές επισκεψιμότητας. Bots και οι δικές σας επισκέψεις ως διαχειριστής δεν μετράνε.
+- **Μόνιμη αποθήκευση (SQLite)**:
+  - Βάση δεδομένων SQLite (ενσωματωμένη στο Node.js — δεν χρειάζεται MySQL ή εγκατάσταση).
+  - Τα δεδομένα ζουν **εκτός** του φακέλου της εφαρμογής, ώστε ένα νέο deploy να μην τα σβήνει: `~/ntsprints-data/ntsprints.db` και `~/ntsprints-data/uploads/` (αλλάζει με `DATA_DIR`).
+  - Στην πρώτη εκκίνηση εισάγονται αυτόματα (μία φορά) τα παλιά `data/leads.json` και `data/uploads/`.
+  - Το Admin Panel δείχνει στο κάτω μέρος πού ακριβώς αποθηκεύονται τα δεδομένα.
 
 ---
 
@@ -70,6 +75,9 @@ npm start
 |---|---|---|
 | `ADMIN_USER` | Όνομα χρήστη | `admin` |
 | `ADMIN_PASSWORD` | Κωδικός | τιμή του `ADMIN_PIN`, αλλιώς `1234` |
+| `DATA_DIR` | Φάκελος βάσης & αρχείων (εκτός app) | `~/ntsprints-data` |
+
+Απαιτείται **Node.js 22.13 ή νεότερο** (ενσωματωμένο SQLite) — στο Hostinger επιλέξτε 22.x ή 24.x.
 
 Στο Hostinger: **Websites → (site) → Environment Variables → Add**, μετά **Redeploy**. Ορίστε οπωσδήποτε δικό σας `ADMIN_PASSWORD`· αν λείπει, ο server γράφει προειδοποίηση στα logs.
 
@@ -97,10 +105,10 @@ npm start
 ```
 clothes/
 ├── package.json          # Express dependency & npm scripts
-├── server.js             # Express API Server, static files & uploads
-├── data/
-│   ├── leads.json        # Αποθηκευμένα leads & quotes
-│   └── uploads/          # Αποθηκευμένα mockups & συνημμένα αρχεία
+├── server.js             # Express API Server, auth, analytics endpoints
+├── db.js                 # SQLite (leads + analytics) & uploads στον DATA_DIR
+├── data/                 # Παλιά αποθήκευση — εισάγεται αυτόματα μία φορά
+~/ntsprints-data/         # (εκτός app) ntsprints.db + uploads/
 ├── public/
 │   ├── index.html        # Κεντρική σελίδα, Hero 3D, Mockup Studio, Quote Modal
 │   ├── admin.html        # Admin Dashboard
@@ -117,7 +125,9 @@ clothes/
 │   │   ├── i18n.js       # Ελληνικά / Αγγλικά
 │   │   ├── theme.js      # Light / dark mode
 │   │   ├── login.js      # Κουμπί & παράθυρο σύνδεσης διαχειριστή
-│   │   └── admin.js      # Admin panel: σύνδεση, γράφημα, leads, CSV export
+│   │   ├── embroidery.js # Μετατροπή logo σε κέντημα (canvas)
+│   │   ├── analytics.js  # Ανώνυμα events χωρίς cookies
+│   │   └── admin.js      # Admin panel: σύνδεση, γράφημα, funnel, leads, CSV export
 │   ├── vendor/
 │   │   ├── three.module.min.js # Three.js r169 (χωρίς εξωτερικά CDN)
 │   │   └── anime.esm.min.js    # anime.js v4.5.0 (MIT)

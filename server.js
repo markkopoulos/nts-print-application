@@ -1,10 +1,11 @@
 /**
- * Custom Apparel Brand — Showcase, Mockup Studio & Admin
- * Simple Node/Express server. No database: leads are stored in data/leads.json
- * and uploaded files in data/uploads/.
+ * NtsPrints — Showcase, Mockup Studio & Admin
+ * Node/Express server. Leads + analytics live in SQLite and uploads on disk, both in
+ * DATA_DIR (outside the deployed code, so redeploys never wipe them) — see db.js.
  *
  * Environment variables (optional):
  *   PORT            – port to listen on (Hostinger sets this automatically)
+ *   DATA_DIR        – where the database and uploads are kept (default: ~/ntsprints-data)
  *   ADMIN_USER      – admin username (default: admin)
  *   ADMIN_PASSWORD  – admin password (falls back to ADMIN_PIN, then to 1234 — change it!)
  */
@@ -13,6 +14,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const store = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,9 +24,7 @@ const USING_DEFAULT_PASSWORD = !process.env.ADMIN_PASSWORD && !process.env.ADMIN
 const SESSION_COOKIE = 'nts_admin';
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-const DATA_DIR = path.join(__dirname, 'data');
-const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
-const DATA_FILE = path.join(DATA_DIR, 'leads.json');
+const UPLOAD_DIR = store.UPLOAD_DIR;
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB per file
 const ALLOWED_EXT = {
@@ -45,69 +45,8 @@ app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] })
 app.use('/uploads', requireAdmin, express.static(UPLOAD_DIR, { maxAge: '1h' }));
 
 /* ------------------------------------------------------------------ */
-/* Storage helpers                                                     */
+/* Upload helper                                                       */
 /* ------------------------------------------------------------------ */
-function ensureStorage() {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) {
-    const now = Date.now();
-    const demo = [
-      {
-        id: 'Q-1001',
-        type: 'quote',
-        createdAt: new Date(now - 3600e3 * 5).toISOString(),
-        status: 'new',
-        name: 'Αλέξανδρος Νικολάου',
-        company: 'Kaya Coffee Bar',
-        email: 'alex@example.com',
-        phone: '+30 697 123 4567',
-        garment: 'hoodie',
-        garmentLabel: 'Oversized Hoodie',
-        colorName: 'Μαύρο',
-        colorHex: '#17181c',
-        technique: 'Κέντημα',
-        positions: [{ name: 'Μπροστά' }, { name: 'Πίσω' }],
-        sizes: { S: 4, M: 10, L: 12, XL: 6 },
-        totalQty: 32,
-        message: 'Κέντημα στο στήθος και μεταξοτυπία στην πλάτη για το προσωπικό μας.',
-        mockup: '',
-        files: []
-      },
-      {
-        id: 'Q-1002',
-        type: 'contact',
-        createdAt: new Date(now - 3600e3 * 28).toISOString(),
-        status: 'contacted',
-        name: 'Ελένη Δημητρίου',
-        company: 'Indie band "Halcyon"',
-        email: 'eleni@example.com',
-        phone: '+30 694 889 0012',
-        interest: 'Μπλουζάκια / φούτερ',
-        quantityText: '50 τεμάχια',
-        message: 'Merch για περιοδεία. Θέλουμε βαρύ οργανικό βαμβάκι.',
-        files: []
-      }
-    ];
-    fs.writeFileSync(DATA_FILE, JSON.stringify(demo, null, 2), 'utf-8');
-  }
-}
-
-function readLeads() {
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-  } catch (e) {
-    console.error('readLeads:', e.message);
-    return [];
-  }
-}
-
-function writeLeads(leads) {
-  // atomic-ish write: write temp file then rename
-  const tmp = DATA_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(leads, null, 2), 'utf-8');
-  fs.renameSync(tmp, DATA_FILE);
-}
-
 /** Saves a base64 data URL to /data/uploads and returns its public info */
 function saveDataUrl(dataUrl, label) {
   if (typeof dataUrl !== 'string') return null;
@@ -222,10 +161,7 @@ app.post('/api/leads', (req, res) => {
       if (f) lead.files.push(f);
     }
 
-    const leads = readLeads();
-    leads.unshift(lead);
-    writeLeads(leads);
-
+    store.insertLead(lead);
     res.status(201).json({ success: true, leadId: lead.id });
   } catch (err) {
     console.error('POST /api/leads', err);
@@ -315,12 +251,12 @@ app.get('/api/admin/session', (req, res) => {
 });
 
 app.get('/api/leads', requireAdmin, (req, res) => {
-  const leads = readLeads();
+  const leads = store.listLeads();
   res.json({ success: true, count: leads.length, data: leads });
 });
 
 app.get('/api/stats', requireAdmin, (req, res) => {
-  const leads = readLeads();
+  const leads = store.listLeads();
   const weekAgo = Date.now() - 7 * 864e5;
   res.json({
     success: true,
@@ -352,19 +288,17 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 });
 
 app.patch('/api/leads/:id', requireAdmin, (req, res) => {
-  const leads = readLeads();
-  const lead = leads.find(l => l.id === req.params.id);
+  const lead = store.getLead(req.params.id);
   if (!lead) return res.status(404).json({ success: false, error: 'Not found' });
   const allowed = ['new', 'contacted', 'completed'];
   if (allowed.includes(req.body.status)) lead.status = req.body.status;
   if (typeof req.body.note === 'string') lead.adminNote = clean(req.body.note, 2000);
-  writeLeads(leads);
+  store.updateLead(lead);
   res.json({ success: true, data: lead });
 });
 
 app.delete('/api/leads/:id', requireAdmin, (req, res) => {
-  const leads = readLeads();
-  const lead = leads.find(l => l.id === req.params.id);
+  const lead = store.getLead(req.params.id);
   if (!lead) return res.status(404).json({ success: false, error: 'Not found' });
 
   // remove associated uploaded files
@@ -374,8 +308,43 @@ app.delete('/api/leads/:id', requireAdmin, (req, res) => {
     fs.promises.unlink(p).catch(() => {});
   });
 
-  writeLeads(leads.filter(l => l.id !== req.params.id));
+  store.deleteLead(req.params.id);
   res.json({ success: true });
+});
+
+/* ------------------------------------------------------------------ */
+/* Analytics (cookieless) — public collector + admin summary           */
+/* ------------------------------------------------------------------ */
+const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|headless|lighthouse|pingdom|monitor|curl|wget|python|axios|node-fetch/i;
+const evHits = new Map();
+app.post('/api/e', express.text({ type: '*/*', limit: '2kb' }), (req, res) => {
+  res.status(204).end(); // never make the visitor wait
+  try {
+    const ua = String(req.get('user-agent') || '');
+    if (!ua || BOT_UA.test(ua) || validSession(req)) return; // skip bots and the shop's own admin visits
+    const now = Date.now();
+    const arr = (evHits.get(req.ip) || []).filter(t => now - t < 60e3);
+    if (arr.length >= 60) return;
+    arr.push(now);
+    evHits.set(req.ip, arr);
+    const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    let ref = '';
+    if (typeof b.r === 'string' && b.r) {
+      try {
+        const host = new URL(b.r).hostname.replace(/^www\./, '');
+        if (host && host !== String(req.hostname).replace(/^www\./, '')) ref = host.slice(0, 80);
+      } catch (e) { /* ignore bad referrer */ }
+    }
+    store.recordEvent({ name: clean(b.n, 40), ip: req.ip, ua, ref, pagePath: clean(b.p, 120) });
+  } catch (e) { /* analytics must never break the site */ }
+});
+
+app.get('/api/analytics', requireAdmin, (req, res) => {
+  res.json({ success: true, data: store.analyticsSummary(parseInt(req.query.days, 10) || 30) });
+});
+
+app.get('/api/admin/system', requireAdmin, (req, res) => {
+  res.json({ success: true, data: { dataDir: store.DATA_DIR, dbPath: store.DB_PATH, fallback: store.DATA_DIR_IS_FALLBACK, leads: store.countLeads(), node: process.version } });
 });
 
 /* ------------------------------------------------------------------ */
@@ -384,9 +353,9 @@ app.delete('/api/leads/:id', requireAdmin, (req, res) => {
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-ensureStorage();
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}  (admin: /admin)`);
+  console.log(`Data stored in ${store.DATA_DIR}`);
   if (USING_DEFAULT_PASSWORD) {
     console.warn('WARNING: admin login is using the default password. Set ADMIN_USER and ADMIN_PASSWORD environment variables.');
   }

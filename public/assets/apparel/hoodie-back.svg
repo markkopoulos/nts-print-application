@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hoodieShadeL" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="hoodieShadeR" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="hoodInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="softBlurHoodie" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3.5"/>
+    </filter>
+  </defs>
+
+  <!-- Shadow behind garment -->
+  <path d="M 210 40 C 150 48, 80 130, 20 220 L 60 510 L 115 500 L 135 240 L 140 595 L 460 595 L 465 240 L 485 500 L 540 510 L 580 220 C 520 130, 450 48, 390 40 Z" fill="#000000" opacity="0.15" filter="url(#softBlurHoodie)" transform="translate(0, 10)"/>
+
+  <!-- Sleeves Back Layer -->
+  <path class="garment-color-fill" d="M 140 160 L 25 220 C 18 240, 35 490, 45 505 L 110 495 L 138 250 Z" fill="#1e1e1e"/>
+  <path class="garment-color-fill" d="M 460 160 L 575 220 C 582 240, 565 490, 555 505 L 490 495 L 462 250 Z" fill="#1e1e1e"/>
+
+  <!-- Sleeve Cuffs -->
+  <path d="M 45 505 L 110 495 L 112 535 L 47 545 Z" fill="#000000" opacity="0.25"/>
+  <path d="M 45 505 L 110 495 L 112 535 L 47 545 Z" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.1" fill="none"/>
+  <path d="M 555 505 L 490 495 L 488 535 L 553 545 Z" fill="#000000" opacity="0.25"/>
+  <path d="M 555 505 L 490 495 L 488 535 L 553 545 Z" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.1" fill="none"/>
+
+  <!-- Main Body -->
+  <path class="garment-color-fill" d="M 205 75 C 160 85, 140 145, 138 210 L 140 580 C 140 595, 150 605, 170 605 L 430 605 C 450 605, 460 595, 460 580 L 462 210 C 460 145, 440 85, 395 75 Z" fill="#1e1e1e"/>
+
+  <!-- Body Side Shading -->
+  <path d="M 138 210 L 140 580 L 195 580 L 175 210 Z" fill="url(#hoodieShadeL)"/>
+  <path d="M 462 210 L 460 580 L 405 580 L 425 210 Z" fill="url(#hoodieShadeR)"/>
+
+  <!-- Bottom Ribbed Hem -->
+  <path d="M 140 555 L 460 555 L 460 605 L 140 605 Z" fill="#000000" opacity="0.2"/>
+  <path d="M 140 555 L 460 555" stroke="#000000" stroke-width="2" stroke-opacity="0.2" fill="none"/>
+
+  <!-- Hood seen from behind (generated) -->
+  <path class="garment-color-fill" d="M 203 78 C 192 34, 246 12, 300 12 C 354 12, 408 34, 397 78 C 392 150, 362 218, 300 232 C 238 218, 208 150, 203 78 Z" fill="#1e1e1e"/>
+  <path d="M 203 78 C 192 34, 246 12, 300 12 C 354 12, 408 34, 397 78 C 392 150, 362 218, 300 232 C 238 218, 208 150, 203 78 Z" stroke="#000000" stroke-width="2" stroke-opacity="0.22" fill="#000000" fill-opacity="0.06"/>
+  <path d="M 300 14 L 300 230" stroke="#000000" stroke-width="1.6" stroke-opacity="0.25" stroke-dasharray="4,2" fill="none"/>
+  <path d="M 230 200 Q 300 250 370 200" stroke="#000000" stroke-width="2" stroke-opacity="0.12" fill="none"/>
+<!-- Natural Chest & Shoulder Folds -->
+  <path d="M 160 210 Q 210 240 240 220" stroke="#000000" stroke-width="1.8" stroke-opacity="0.15" fill="none"/>
+  <path d="M 440 210 Q 390 240 360 220" stroke="#000000" stroke-width="1.8" stroke-opacity="0.15" fill="none"/>
+  <path d="M 160 300 Q 200 325 240 310" stroke="#000000" stroke-width="1.5" stroke-opacity="0.12" fill="none"/>
+  <path d="M 440 300 Q 400 325 360 310" stroke="#000000" stroke-width="1.5" stroke-opacity="0.12" fill="none"/>
+</svg>

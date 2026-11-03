@@ -171,19 +171,22 @@
                 <h3 id="garmentName">Hoodie</h3>
                 <p id="garmentSpec"></p>
               </div>
-              <div class="seg" role="group" data-i18n-attr="aria-label:studio.viewAria" aria-label="Προβολή">
-                <button type="button" class="seg-btn is-active" data-view="2d">2D</button>
-                <button type="button" class="seg-btn" data-view="3d">3D</button>
+              <div class="stage-ctrls">
+                <div class="seg" id="sideToggle" role="group" data-i18n-attr="aria-label:studio.sideAria" aria-label="Πλευρά">
+                  <button type="button" class="seg-btn is-active" data-side="front" data-i18n="studio.front">Μπροστά</button>
+                  <button type="button" class="seg-btn" data-side="back" data-i18n="studio.back">Πίσω</button>
+                </div>
+                <div class="seg" role="group" data-i18n-attr="aria-label:studio.viewAria" aria-label="Προβολή">
+                  <button type="button" class="seg-btn is-active" data-view="2d">2D</button>
+                  <button type="button" class="seg-btn" data-view="3d">3D</button>
+                </div>
               </div>
             </div>
 
             <div class="stage-2d">
-              <div class="art-wrap">
+              <div class="art-wrap" data-i18n-attr="title:studio.dragTitle" title="Σύρετε για μετακίνηση">
                 <div class="garment-art" id="garmentArt"></div>
-                <div class="print-area" id="printArea" data-i18n-attr="title:studio.dragTitle" title="Σύρετε για μετακίνηση">
-                  <img id="logoImg" data-i18n-attr="alt:studio.logoAlt" alt="Το logo σας" draggable="false">
-                  <span class="print-tag" data-i18n="studio.printArea">Περιοχή τυπώματος</span>
-                </div>
+                <!-- print areas (front, chest, back, sleeve) are created by studio.js -->
               </div>
             </div>
             <div class="stage-3d" id="studio3d"></div>
@@ -216,7 +219,13 @@
             </div>
 
             <div class="step">
-              <div class="step-h"><b>3</b> <span data-i18n="studio.s3">Το logo σας</span></div>
+              <div class="step-h"><b>3</b> <span data-i18n="studio.sPos">Θέσεις τυπώματος</span></div>
+              <div class="pl-picker" id="placementPicker" role="group" data-i18n-attr="aria-label:studio.sPos" aria-label="Θέσεις τυπώματος"></div>
+              <p class="step-help" data-i18n="studio.posHelp">Προσθέστε όσες θέσεις θέλετε. Κάθε θέση έχει δικό της logo, μέγεθος και σημείο.</p>
+            </div>
+
+            <div class="step">
+              <div class="step-h"><b>4</b> <span data-i18n="studio.s3">Το logo σας</span> <span class="step-val"><span data-i18n="studio.forPos">για:</span> <b id="activePlacementName">Μπροστά</b></span></div>
               <label class="drop" id="dropZone">
                 <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden>
                 <span class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg></span>
@@ -235,7 +244,16 @@
             </div>
 
             <div class="step">
-              <div class="step-h"><b>4</b> <span data-i18n="studio.s4">Θέση & μέγεθος</span> <span class="step-val" id="sizeVal">60%</span></div>
+              <div class="step-h"><b>5</b> <span data-i18n="studio.sFinish">Τεχνική</span></div>
+              <div class="seg seg--wide" id="finishToggle" role="group" data-i18n-attr="aria-label:studio.sFinish" aria-label="Τεχνική">
+                <button type="button" class="seg-btn is-active" data-finish="print" data-i18n="studio.print">Τύπωμα (DTF)</button>
+                <button type="button" class="seg-btn" data-finish="embroidery" data-i18n="studio.embroidery">Κέντημα</button>
+              </div>
+              <p class="step-help" id="embNote" hidden data-i18n="studio.embNote">Προεπισκόπηση κεντήματος: τα χρώματα απλοποιούνται σε έως 8 κλωστές και οι λεπτομέρειες γίνονται πιο έντονες — όπως θα βγει στο ύφασμα. Για πολύ μικρά γράμματα σας προτείνουμε τύπωμα.</p>
+            </div>
+
+            <div class="step">
+              <div class="step-h"><b>6</b> <span data-i18n="studio.s4">Θέση & μέγεθος</span> <span class="step-val" id="sizeVal">60%</span></div>
               <div class="size-bar">
                 <button type="button" id="sizeMinus" data-i18n-attr="aria-label:studio.smaller" aria-label="Μικρότερο">−</button>
                 <input type="range" id="sizeRange" min="10" max="120" value="60" data-i18n-attr="aria-label:studio.sizeAria" aria-label="Μέγεθος logo">
@@ -243,10 +261,10 @@
               </div>
               <div class="presets">
                 <button type="button" class="chip-btn is-active" data-preset="center" data-i18n="studio.center">Κέντρο</button>
-                <button type="button" class="chip-btn" data-preset="chest" data-i18n="studio.chest">Στήθος</button>
                 <button type="button" class="chip-btn" data-preset="big" data-i18n="studio.big">Μεγάλο τύπωμα</button>
                 <button type="button" class="chip-btn chip-btn--ghost" id="resetBtn" data-i18n="studio.reset">Επαναφορά</button>
               </div>
+              <button type="button" class="link-btn pl-remove" id="removePlacement" hidden data-i18n="studio.removePos">Αφαίρεση αυτής της θέσης</button>
             </div>
 
             <div class="panel-actions">

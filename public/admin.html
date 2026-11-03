@@ -138,6 +138,33 @@
         </details>
       </section>
 
+      <!-- Traffic & conversion funnel (privacy-friendly, first-party analytics) -->
+      <section class="chart-card" aria-labelledby="funnelTitle">
+        <div class="chart-head">
+          <div>
+            <h3 id="funnelTitle">Επισκεψιμότητα & πορεία προς προσφορά</h3>
+            <p class="chart-sub">Ανώνυμα στατιστικά χωρίς cookies · οι δικές σας επισκέψεις ως διαχειριστής δεν μετράνε</p>
+          </div>
+          <div class="filter-tabs-group period-tabs" role="group" aria-label="Περίοδος">
+            <button type="button" class="tab-btn" data-days="7">7 ημέρες</button>
+            <button type="button" class="tab-btn active" data-days="30">30 ημέρες</button>
+            <button type="button" class="tab-btn" data-days="90">90 ημέρες</button>
+          </div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi"><b id="kpiVisitors">0</b><span>Επισκέπτες</span></div>
+          <div class="kpi"><b id="kpiConversion">0%</b><span>Επισκέπτες που ζήτησαν προσφορά</span></div>
+          <div class="kpi"><b id="kpiContacts">0</b><span>Μηνύματα επικοινωνίας</span></div>
+        </div>
+        <div class="funnel-grid">
+          <ol class="funnel" id="funnelList" aria-label="Πορεία επισκεπτών"></ol>
+          <div class="refs">
+            <h4>Από πού ήρθαν</h4>
+            <ul id="refList"></ul>
+          </div>
+        </div>
+      </section>
+
       <!-- Leads Management Section -->
       <div class="leads-card">
         <!-- Toolbar -->
@@ -183,6 +210,8 @@
       </div>
     </div>
   </div>
+
+  <p class="wrap storage-note" id="storageNote" hidden></p>
 
   <!-- Full Resolution Mockup & Lead Details Inspector Modal -->
   <div class="mockup-viewer-overlay" id="mockupViewerModal">
