@@ -3,6 +3,7 @@
  * + general contact form.
  */
 import { toast } from './studio.js';
+import { track } from './analytics.js';
 
 const C = window.CATALOG;
 const { t, pick } = window.I18N;
@@ -49,7 +50,9 @@ export function initQuote(studio) {
   });
 
   const pWrap = $('#qPositions');
-  const defKey = i => (i === 0 ? 'q.fromStudio' : 'q.upload');
+  // print positions set up in the Mockup Studio: catalog position index -> { file, fileName }
+  let studioPrints = { 0: {} };
+  const defKey = i => (studioPrints[i] ? 'q.fromStudio' : 'q.upload');
   C.positions.forEach((p, i) => {
     // value = Greek name, so saved requests are always consistent for the admin panel
     pWrap.insertAdjacentHTML('beforeend', `
@@ -162,8 +165,32 @@ export function initQuote(studio) {
     if (!studio) return update();
     if (e.target.name === 'garment') studio.setGarment(e.target.value).then(refreshPreview);
     if (e.target.name === 'color') { studio.setColor(+e.target.value); refreshPreview(); }
+    // choosing a technique here switches the studio preview too (embroidery look vs print)
+    if (e.target.name === 'technique') {
+      const v = e.target.value;
+      if (v === 'Κέντημα') studio.setFinish('embroidery').then(refreshPreview);
+      else if (v !== 'Δεν είμαι σίγουρος/η') studio.setFinish('print').then(refreshPreview);
+    }
     update();
   });
+
+  /** tick the positions designed in the studio and label their file as "From the Mockup Studio" */
+  function syncPositionsFromStudio() {
+    const prints = studio.getPrints();
+    studioPrints = {};
+    prints.forEach(pr => { studioPrints[pr.pos] = pr; });
+    $$('.pos-row', pWrap).forEach(row => {
+      const i = +row.dataset.pos;
+      const on = !!studioPrints[i] || !!files[i];
+      $('input[type=checkbox]', row).checked = on;
+      $('.pos-file', row).hidden = !on;
+      if (!files[i]) {
+        const fn = $('[data-fname]', row);
+        fn.setAttribute('data-i18n', defKey(i));
+        fn.textContent = t(defKey(i));
+      }
+    });
+  }
 
   async function refreshPreview() {
     if (!studio) return;
@@ -177,11 +204,18 @@ export function initQuote(studio) {
 
   /* ---------- Open / close ---------- */
   function open() {
+    track('quote_open');
     lastFocus = document.activeElement;
     if (studio) {
       const st = studio.getState();
       F('garment').value = st.garment;
       F('color').value = String(st.colorIndex);
+      syncPositionsFromStudio();
+      if (st.finishTouched) {
+        const want = st.finish === 'embroidery' ? 'Κέντημα' : 'Εκτύπωση DTF';
+        const radio = $$('input[name=technique]', form).find(r => r.value === want);
+        if (radio) radio.checked = true;
+      }
       refreshPreview();
     } else {
       F('garment').value = 'tshirt';
@@ -234,7 +268,9 @@ export function initQuote(studio) {
     try {
       const posPayload = await Promise.all(positions.map(async chk => {
         const i = +chk.closest('.pos-row').dataset.pos;
-        return { name: chk.value, file: files[i] ? await readAsDataURL(files[i]) : null };
+        // a file picked here wins; otherwise the logo uploaded for that position in the studio
+        const file = files[i] ? await readAsDataURL(files[i]) : (studioPrints[i] && studioPrints[i].file) || null;
+        return { name: chk.value, file };
       }));
       const color = C.colors[+F('color').value];
       const g = C.garments[F('garment').value];
@@ -256,8 +292,7 @@ export function initQuote(studio) {
         message: F('message').value,
         consent: F('consent').checked,
         website: F('website').value,
-        mockup: studio ? await studio.snapshot(1000) : '',
-        studioLogo: studio ? studio.rawLogoForUpload() : null
+        mockup: studio ? await studio.snapshot(1000) : ''
       };
 
       const res = await fetch('/api/leads', {
@@ -270,6 +305,7 @@ export function initQuote(studio) {
 
       $('#qDoneId').textContent = data.leadId;
       modal.classList.add('is-done');
+      track('quote_submit');
     } catch (err) {
       $('#qMsg').textContent = err.message || t('err.generic');
     } finally {
@@ -281,6 +317,7 @@ export function initQuote(studio) {
   $('#qNew')?.addEventListener('click', () => {
     form.reset();
     Object.keys(files).forEach(k => delete files[k]);
+    studioPrints = { 0: {} };
     $$('.pos-row', pWrap).forEach((row, i) => {
       $('.pos-file', row).hidden = i !== 0;
       $('.pos-file', row).classList.remove('has-file');
@@ -353,6 +390,7 @@ export function initContact() {
       fileLabel.classList.remove('has-file');
       msg.classList.add('is-ok');
       msg.textContent = t('ok.contact', { id: data.leadId });
+      track('contact_submit');
     } catch (err) {
       msg.classList.add('is-err');
       msg.textContent = err.message;

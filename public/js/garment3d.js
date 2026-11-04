@@ -140,13 +140,14 @@ function studioEnvironment(renderer) {
 /* ------------------------------------------------------------------ */
 /* Geometry builders                                                   */
 /* ------------------------------------------------------------------ */
-/** Indexed grid (rows x cols) with outward winding; seam = first/last column share normals */
-function gridGeometry(pos, uv, rows, cols, seam) {
+/** Indexed grid (rows x cols). Default winding faces outward when columns run right→left as seen
+ *  from outside (torso); pass flip for grids laid out left→right, bottom→top. seam = shared edge normals */
+function gridGeometry(pos, uv, rows, cols, seam, flip = false) {
   const idx = [];
   for (let j = 0; j < rows - 1; j++) {
     for (let i = 0; i < cols - 1; i++) {
       const a = j * cols + i, b = a + 1, c = a + cols, d = c + 1;
-      idx.push(a, c, b, b, c, d);
+      if (flip) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d);
     }
   }
   const g = new THREE.BufferGeometry();
@@ -271,7 +272,7 @@ function buildSleeve(sp, side) {
     }
   }
   geo.computeVertexNormals();
-  return { geo, curve, endR: radius(1) };
+  return { geo, curve, radius, endR: radius(1) };
 }
 
 function tube(points, r, closed = false, seg = 96) {
@@ -348,7 +349,8 @@ export function createGarment3D(container, opts = {}) {
   const targetColor = baseColor.clone();
   const white = new THREE.Color(0xffffff);
 
-  let logoMesh = null, logoTexture = null, logoState = null, currentKey = null, current = null;
+  let currentKey = null, current = null, sleeveInfo = null;
+  const prints = new Map(); // key -> { state, tex, bump, mesh }
 
   function add(geo, mat, { shadowCast = true, shadowReceive = true } = {}) {
     const mesh = new THREE.Mesh(geo, mat);
@@ -361,7 +363,8 @@ export function createGarment3D(container, opts = {}) {
   function disposeModel() {
     model.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     model.clear();
-    logoMesh = null;
+    prints.forEach(p => { p.mesh = null; });
+    sleeveInfo = null;
   }
 
   /* ---------------- Builders per garment ---------------- */
@@ -389,6 +392,7 @@ export function createGarment3D(container, opts = {}) {
     [-1, 1].forEach(side => {
       const sl = buildSleeve(m.sleeve, side);
       add(sl.geo, fabric);
+      if (side === 1) sleeveInfo = { curve: sl.curve, radius: sl.radius, zs: m.sleeve.zs, long: m.sleeve.long };
       const end = sl.curve.getPointAt(1), tan = sl.curve.getTangentAt(1);
       const cap = add(new THREE.CircleGeometry(1, 32), lining, { shadowCast: false });
       cap.scale.set(sl.endR * 0.93, sl.endR * 0.93, 1);
@@ -463,8 +467,8 @@ export function createGarment3D(container, opts = {}) {
         uv[k * 2] = (x + 150) / 40; uv[k * 2 + 1] = (y + 300) / 40;
       }
     }
-    // rows go bottom→top and columns left→right, so this winding faces +z
-    add(gridGeometry(pos, uv, R + 1, C + 1, false), fabric, { shadowCast: false });
+    // rows go bottom→top and columns left→right: flipped winding so the panel faces +z
+    add(gridGeometry(pos, uv, R + 1, C + 1, false, true), fabric, { shadowCast: false });
     // pocket openings (slanted sides) + top seam
     [-1, 1].forEach(side => {
       const pts = [0, 0.5, 1].map(f => {
@@ -568,46 +572,19 @@ export function createGarment3D(container, opts = {}) {
     model.scale.setScalar(1);
     if (current.cap) buildCap(current);
     else buildTop(current);
-    if (logoState) applyLogo();
+    prints.forEach((_, k) => buildPrint(k));
     baseTilt = current.tilt || 0.06; // caps are viewed slightly from above, like a product photo
     if (!first) { pop = 0.82; popV = 0; spinKick += 0.9; }
   }
 
-  /* ---------------- Logo (conforms to the fabric) ---------------- */
-  function applyLogo() {
-    if (!logoTexture || !logoState || !current) return;
-    if (logoMesh) { model.remove(logoMesh); logoMesh.geometry.dispose(); logoMesh = null; }
-
-    const b = logoState.bounds || { top: 24, left: 32, width: 36, height: 44 };
-    const pw = (b.width / 100) * 600, ph = (b.height / 100) * 650;
-    const cx = (b.left / 100) * 600 + pw / 2 + (logoState.x || 0) * pw;
-    const cy = (b.top / 100) * 650 + ph / 2 + (logoState.y || 0) * ph;
-    const img = logoTexture.image;
-    const aspect = img && img.width ? img.height / img.width : 1;
-    const w = (logoState.scale || 0.6) * pw, h = w * aspect;
-
-    const g = new THREE.PlaneGeometry(w, h, 28, 28);
-    const P = g.attributes.position;
-    for (let i = 0; i < P.count; i++) {
-      const x = tx(cx) + P.getX(i), y = ty(cy) + P.getY(i);
-      P.setXYZ(i, x, y, frontZ(x, y) + 1.6);
-    }
-    g.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({
-      map: logoTexture, transparent: true, roughness: 0.82, metalness: 0,
-      bumpMap: knit, bumpScale: 0.12, polygonOffset: true, polygonOffsetFactor: -2, depthWrite: false
-    });
-    logoMesh = new THREE.Mesh(g, mat);
-    logoMesh.receiveShadow = true;
-    logoMesh.renderOrder = 2;
-    model.add(logoMesh);
-  }
-
-  function setLogo(src, state = {}) {
-    logoState = Object.assign({}, logoState || {}, state);
-    if (!src) return;
-    if (src === logoState._src && logoTexture) { applyLogo(); return; }
-    logoState._src = src;
+  /* ---------------- Prints (logos that follow the fabric) ----------------
+   * One decal per print position:
+   *   front / chest – on the chest (2D front-artwork coordinates)
+   *   back          – mirrored onto the back (2D back-artwork coordinates)
+   *   sleeve        – wrapped around the wearer's left upper sleeve
+   * finish 'embroidery' adds a raised, glossy-thread material with a height (bump) map.
+   */
+  const loadCanvasTexture = (src, cb, srgb = true) => {
     const im = new Image();
     im.crossOrigin = 'anonymous';
     im.onload = () => {
@@ -617,24 +594,147 @@ export function createGarment3D(container, opts = {}) {
       c.width = Math.max(2, Math.round((im.naturalWidth || max) * r));
       c.height = Math.max(2, Math.round((im.naturalHeight || max) * r));
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      if (logoTexture) logoTexture.dispose();
-      logoTexture = new THREE.CanvasTexture(c);
-      logoTexture.colorSpace = THREE.SRGBColorSpace;
-      logoTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      applyLogo();
+      const tex = new THREE.CanvasTexture(c);
+      if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      cb(tex);
     };
     im.src = src;
+  };
+
+  function printGeometry(st, aspect) {
+    const b = st.bounds || { top: 24, left: 32, width: 36, height: 44 };
+    const pw = (b.width / 100) * 600, ph = (b.height / 100) * 650;
+    const cx = (b.left / 100) * 600 + pw / 2 + (st.x || 0) * pw;
+    const cy = (b.top / 100) * 650 + ph / 2 + (st.y || 0) * ph;
+    const w = (st.scale || 0.6) * pw, h = w * aspect;
+    const lift = st.finish === 'embroidery' ? 2.6 : 1.6;
+    const side = st.side || 'front';
+
+    if (side === 'sleeve' || (side === 'front' && st.key === 'sleeve')) {
+      if (!sleeveInfo) return null;
+      return sleeveGeometry(sleeveInfo, w, h, st, lift);
+    }
+    const g = new THREE.PlaneGeometry(w, h, 28, 28);
+    const P = g.attributes.position;
+    for (let i = 0; i < P.count; i++) {
+      if (side === 'back') {
+        if (current.cap) return null;
+        // viewer's left on the back artwork is the model's +x side
+        const x = 300 - cx - P.getX(i), y = ty(cy) + P.getY(i);
+        P.setXYZ(i, x, y, -torsoFrontZ(current, x, y) - lift);
+      } else {
+        const x = tx(cx) + P.getX(i), y = ty(cy) + P.getY(i);
+        P.setXYZ(i, x, y, frontZ(x, y) + lift);
+      }
+    }
+    g.computeVertexNormals();
+    return g;
   }
 
-  function setLogoTransform(state = {}) {
-    logoState = Object.assign({}, logoState || {}, state);
-    applyLogo();
+  /** decal wrapped around the upper sleeve, facing outward-front */
+  function sleeveGeometry(si, w, h, st, lift) {
+    const len = si.curve.getLength();
+    const tC = (si.long ? 0.27 : 0.55) + (st.y || 0) * 0.2;
+    const C = 24, R = 24, pos = new Float32Array((C + 1) * (R + 1) * 3), uv = new Float32Array((C + 1) * (R + 1) * 2);
+    const out0 = new THREE.Vector3(1, 0, 0.85).normalize();
+    const T = new THREE.Vector3(), N = new THREE.Vector3(), Rv = new THREE.Vector3(), ctr = new THREE.Vector3(), o = new THREE.Vector3();
+    for (let j = 0; j <= R; j++) {
+      const v = j / R;
+      const t = Math.min(0.97, Math.max(0.03, tC + (0.5 - v) * (h / len)));
+      si.curve.getPointAt(t, ctr);
+      si.curve.getTangentAt(t, T);
+      N.copy(out0).addScaledVector(T, -out0.dot(T)).normalize();
+      Rv.copy(T).negate().cross(N).normalize(); // right = up(-T) × outward
+      const r = si.radius(t) + lift;
+      const span = w / r;
+      for (let i = 0; i <= C; i++) {
+        const u = i / C, a = (u - 0.5) * span + (st.x || 0) * 0.6;
+        o.copy(N).multiplyScalar(Math.cos(a)).addScaledVector(Rv, Math.sin(a));
+        o.z *= si.zs;
+        o.multiplyScalar(r).add(ctr);
+        const k = j * (C + 1) + i;
+        pos.set([o.x, o.y, o.z], k * 3);
+        uv.set([u, v], k * 2);
+      }
+    }
+    return gridGeometry(pos, uv, R + 1, C + 1, false, true);
   }
+
+  function buildPrint(key) {
+    const p = prints.get(key);
+    if (!p || !current) return;
+    if (p.mesh) { model.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); p.mesh = null; }
+    if (!p.tex || p.state.enabled === false) return;
+    const img = p.tex.image;
+    const g = printGeometry({ ...p.state, key }, img && img.width ? img.height / img.width : 1);
+    if (!g) return;
+    const emb = p.state.finish === 'embroidery';
+    const mat = emb
+      ? new THREE.MeshPhysicalMaterial({
+          map: p.tex, transparent: true, roughness: 0.5, metalness: 0,
+          sheen: 0.9, sheenRoughness: 0.35, sheenColor: new THREE.Color(0xffffff),
+          bumpMap: p.bump || null, bumpScale: 5, polygonOffset: true, polygonOffsetFactor: -2, depthWrite: false
+        })
+      : new THREE.MeshStandardMaterial({
+          map: p.tex, transparent: true, roughness: 0.82, metalness: 0,
+          bumpMap: knit, bumpScale: 0.12, polygonOffset: true, polygonOffsetFactor: -2, depthWrite: false
+        });
+    p.mesh = new THREE.Mesh(g, mat);
+    p.mesh.receiveShadow = true;
+    p.mesh.castShadow = emb;
+    p.mesh.renderOrder = 2;
+    model.add(p.mesh);
+  }
+
+  /** add / update one print. state: { src, bumpSrc, side, bounds, x, y, scale, finish, enabled } */
+  function setPrint(key, state = {}) {
+    const p = prints.get(key) || { state: {} };
+    prints.set(key, p);
+    const prev = p.state;
+    p.state = Object.assign({}, prev, state);
+    let pending = 0;
+    if (state.src && state.src !== prev.src) {
+      pending++;
+      loadCanvasTexture(state.src, tex => {
+        if (p.state.src !== state.src) { tex.dispose(); return; }
+        if (p.tex) p.tex.dispose();
+        p.tex = tex;
+        buildPrint(key);
+      });
+    }
+    if ('bumpSrc' in state && state.bumpSrc !== prev.bumpSrc) {
+      if (p.bump) { p.bump.dispose(); p.bump = null; }
+      if (state.bumpSrc) {
+        pending++;
+        loadCanvasTexture(state.bumpSrc, tex => {
+          if (p.state.bumpSrc !== state.bumpSrc) { tex.dispose(); return; }
+          p.bump = tex;
+          buildPrint(key);
+        }, false);
+      }
+    }
+    if (!pending) buildPrint(key);
+  }
+
+  function removePrint(key) {
+    const p = prints.get(key);
+    if (!p) return;
+    if (p.mesh) { model.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
+    if (p.tex) p.tex.dispose();
+    if (p.bump) p.bump.dispose();
+    prints.delete(key);
+  }
+
+  // single-logo API (hero) = the 'front' print
+  const setLogo = (src, state = {}) => setPrint('front', { ...state, src });
+  const setLogoTransform = (state = {}) => setPrint('front', state);
 
   function setColor(hex) { targetColor.set(hex); }
 
   /* ---------------- Interaction ---------------- */
   let rotY = -0.4, rotX = 0.06, velY = 0, targetX = 0.06, baseTilt = 0.06;
+  let swayCenter = 0, focusUntil = 0;
   let dragging = false, lastX = 0, lastY = 0, lastInteract = -9999;
   let pop = 1, popV = 0, spinKick = 0;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -675,10 +775,10 @@ export function createGarment3D(container, opts = {}) {
       velY *= 0.94;
       rotY += velY;
       if (spinKick > 0.001) { const s = spinKick * 0.12; rotY += s; spinKick -= s; }
-      const idle = performance.now() - lastInteract > 2500;
+      const idle = performance.now() - lastInteract > 2500 || performance.now() < focusUntil;
       if (idle && !reduceMotion) {
         if (options.motion === 'spin') rotY += dt * 0.42;
-        else rotY += (Math.sin(t * 0.55) * 0.5 - rotY) * 0.02;
+        else rotY += (swayCenter + Math.sin(t * 0.55) * 0.5 - rotY) * (performance.now() < focusUntil ? 0.07 : 0.02);
         targetX += (baseTilt - targetX) * 0.03;
       }
     }
@@ -725,6 +825,16 @@ export function createGarment3D(container, opts = {}) {
     setColor,
     setLogo,
     setLogoTransform,
+    setPrint,
+    removePrint,
+    /** turn the garment to face a print position ('front' | 'back' | 'sleeve') */
+    focus(where) {
+      swayCenter = where === 'back' ? Math.PI : where === 'sleeve' ? -1.3 : 0;
+      // take the short way round
+      rotY = swayCenter + Math.atan2(Math.sin(rotY - swayCenter), Math.cos(rotY - swayCenter));
+      velY = 0;
+      focusUntil = performance.now() + 1800;
+    },
     setRotation(y, x = baseTilt) { rotY = y; targetX = rotX = x; velY = 0; lastInteract = performance.now() + 1e9; },
     snapshot() { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/png'); },
     dispose() {

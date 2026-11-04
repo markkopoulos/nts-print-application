@@ -42,6 +42,66 @@ function enterDashboard() {
   showMain();
   fetchStats();
   fetchLeads();
+  fetchAnalytics();
+  fetchSystem();
+}
+
+/* ------------------------------------------------------------------ */
+/* Analytics: KPIs, funnel, referrers                                  */
+/* ------------------------------------------------------------------ */
+let analyticsDays = 30;
+const FUNNEL = [
+  ['pageview', 'Επισκέφθηκαν τη σελίδα'],
+  ['studio_view', 'Είδαν το Mockup Studio'],
+  ['logo_upload', 'Ανέβασαν δικό τους logo'],
+  ['quote_open', 'Άνοιξαν τη φόρμα προσφοράς'],
+  ['quote_submit', 'Έστειλαν αίτημα προσφοράς']
+];
+
+async function fetchAnalytics() {
+  try {
+    const res = await adminFetch(`/api/analytics?days=${analyticsDays}`);
+    const json = await res.json();
+    if (json.success) renderAnalytics(json.data);
+  } catch (e) { console.error('Analytics error:', e); }
+}
+
+function renderAnalytics(d) {
+  const c = d.counts || {};
+  const visitors = c.pageview || 0;
+  const pct = n => (visitors ? Math.round((n / visitors) * 1000) / 10 : 0);
+  document.getElementById('kpiVisitors').textContent = visitors.toLocaleString('el-GR');
+  document.getElementById('kpiConversion').textContent = pct(c.quote_submit || 0).toLocaleString('el-GR') + '%';
+  document.getElementById('kpiContacts').textContent = (c.contact_submit || 0).toLocaleString('el-GR');
+
+  document.getElementById('funnelList').innerHTML = FUNNEL.map(([key, label], i) => {
+    const n = c[key] || 0;
+    const w = visitors ? Math.max(n ? 1.5 : 0, (n / visitors) * 100) : 0;
+    const prev = i ? (c[FUNNEL[i - 1][0]] || 0) : 0;
+    const step = i && prev ? ` · ${Math.round((n / prev) * 100)}% από το προηγούμενο βήμα` : '';
+    return `<li title="${label}: ${n}${step}">
+      <div class="f-label"><span>${label}</span><b>${n.toLocaleString('el-GR')}</b><em>${i ? pct(n).toLocaleString('el-GR') + '%' : ''}</em></div>
+      <div class="f-track"><div class="f-bar" style="width:${w}%"></div></div>
+    </li>`;
+  }).join('');
+
+  const refs = d.referrers || [];
+  document.getElementById('refList').innerHTML = refs.length
+    ? refs.map(r => `<li><span>${escapeHtml(r.ref)}</span><b>${r.n}</b></li>`).join('')
+    : '<li class="muted">Καμία παραπομπή ακόμα — οι περισσότεροι ήρθαν απευθείας.</li>';
+}
+
+async function fetchSystem() {
+  try {
+    const res = await adminFetch('/api/admin/system');
+    const json = await res.json();
+    if (!json.success) return;
+    const el = document.getElementById('storageNote');
+    el.textContent = `Αποθήκευση δεδομένων: ${json.data.dbPath} · ${json.data.leads} αιτήματα · Node ${json.data.node}` +
+      (json.data.fallback ? ' · ⚠ ΠΡΟΣΟΧΗ: ο φάκελος είναι μέσα στην εφαρμογή και μπορεί να σβηστεί σε νέο deploy — ορίστε DATA_DIR.' : '');
+    el.classList.toggle('is-warn', !!json.data.fallback);
+    el.hidden = false;
+  } catch (e) { /* not critical */ }
 }
 
 async function login(username, password) {
@@ -92,8 +152,15 @@ function setupListeners() {
     refreshBtn.addEventListener('click', () => {
       fetchStats();
       fetchLeads();
+      fetchAnalytics();
     });
   }
+
+  document.querySelectorAll('.period-tabs .tab-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-tabs .tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    analyticsDays = +btn.dataset.days;
+    fetchAnalytics();
+  }));
 
   const searchInput = document.getElementById('leadSearchInput');
   if (searchInput) {
@@ -102,7 +169,7 @@ function setupListeners() {
     });
   }
 
-  const filterTabs = document.querySelectorAll('.tab-btn');
+  const filterTabs = document.querySelectorAll('.leads-toolbar .tab-btn');
   filterTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       filterTabs.forEach(t => t.classList.remove('active'));

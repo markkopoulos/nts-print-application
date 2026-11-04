@@ -855,3 +855,37 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
 @media (max-width: 400px) {
   .pill-live { display: none; }
 }
+
+/* =====================================================================
+   Studio: sides, print positions, finish (print / embroidery)
+   ===================================================================== */
+.stage-ctrls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.stage-ctrls .seg[hidden] { display: none; }
+.pl-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.pl-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; border: 1px dashed var(--line-2); background: var(--surface); font-size: 14px; color: var(--mut); transition: all .2s; }
+.pl-chip i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; background: var(--soft); color: var(--mut); }
+.pl-chip:hover { border-color: var(--brand); color: var(--ink); }
+.pl-chip.is-on { border-style: solid; color: var(--ink-2); }
+.pl-chip.is-on i { background: var(--tint); color: var(--brand); }
+.pl-chip.is-active { border-color: var(--brand); background: var(--tint); color: var(--ink); box-shadow: 0 0 0 3px rgba(44, 49, 146, .12); }
+.pl-chip.is-active i { background: var(--brand); color: #fff; }
+.step-help { font-size: 13px; color: var(--mut); margin-top: 10px; line-height: 1.5; }
+.step-val b { color: var(--ink); font-weight: 600; }
+.seg--wide { display: flex; width: 100%; }
+.seg--wide .seg-btn { flex: 1; height: 38px; font-size: 14px; }
+.pl-remove { margin-top: 12px; font-size: 13px; color: var(--err); }
+
+/* every visible print area can be clicked to edit it; the one being edited is outlined */
+.print-area:not(.is-active) { opacity: .92; }
+.print-area:not(.is-active):hover { border-color: rgba(44, 49, 146, .3); }
+.print-area.is-active { border-color: rgba(44, 49, 146, .35); }
+.on-light .print-area.is-active { border-color: rgba(44, 49, 146, .3); }
+.print-area.is-active .print-tag { opacity: 1; }
+/* embroidery: raised thread, small cast shadow */
+.print-area.is-emb img { filter: drop-shadow(0 1.5px .8px rgba(0, 0, 0, .45)) drop-shadow(0 0 .4px rgba(0, 0, 0, .35)); }
+.studio-stage.is-busy .stage-2d { cursor: progress; }
+.studio-stage.is-busy .art-wrap { opacity: .7; transition: opacity .2s; }
+@media (max-width: 640px) {
+  .stage-top { flex-direction: column; }
+  .stage-ctrls { justify-content: flex-start; }
+}

@@ -3,6 +3,7 @@ import { initQuote, initContact } from './quote.js';
 import { createGarment3D, webglAvailable } from './garment3d.js';
 import { initLogin } from './login.js';
 import { initAnimations } from './animations.js';
+import { initAnalytics } from './analytics.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -26,6 +27,7 @@ const studio = initStudio();
 initQuote(studio);
 initContact();
 initLogin();
+initAnalytics();
 
 /* Category cards → preselect garment in studio */
 $$('[data-pick]').forEach(el => el.addEventListener('click', e => {
