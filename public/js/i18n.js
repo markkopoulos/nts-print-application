@@ -404,9 +404,11 @@
     if (!LANGS.includes(next) || next === lang) return;
     lang = next;
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) { /* ignore */ }
-    apply();
-    syncToggle();
-    listeners.forEach(fn => fn(lang));
+    const swap = () => { apply(); syncToggle(); listeners.forEach(fn => fn(lang)); };
+    // smooth crossfade of the whole page where View Transitions are supported
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (document.startViewTransition && !calm) document.startViewTransition(swap);
+    else swap();
   }
 
   window.I18N = {

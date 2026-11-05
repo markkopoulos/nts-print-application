@@ -287,7 +287,9 @@ export function createGarment3D(container, opts = {}) {
   const options = Object.assign({ garment: 'tshirt', color: '#17181c', motion: 'sway', interactive: true }, opts);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // phones: slightly lower render resolution + cheaper shadows keep animations smooth
+  const handheld = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 760;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, handheld ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping; // keeps garment colours true to the swatches
   renderer.toneMappingExposure = 1.0;
@@ -307,7 +309,7 @@ export function createGarment3D(container, opts = {}) {
   const key = new THREE.DirectionalLight(0xffffff, 1.9);
   key.position.set(2.2, 3.2, 4);
   key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.mapSize.set(handheld ? 512 : 1024, handheld ? 512 : 1024);
   Object.assign(key.shadow.camera, { left: -1.4, right: 1.4, top: 1.4, bottom: -1.4, near: 1, far: 12 });
   key.shadow.bias = -0.0004;
   key.shadow.normalBias = 0.02;
@@ -762,7 +764,7 @@ export function createGarment3D(container, opts = {}) {
   }
 
   /* ---------------- Loop ---------------- */
-  let visible = true, raf = 0;
+  let visible = true, raf = 0, readyMarked = false;
   const clock = new THREE.Clock();
 
   function frame() {
@@ -801,6 +803,7 @@ export function createGarment3D(container, opts = {}) {
     lining.color.copy(fabric.color).multiplyScalar(0.28);
 
     renderer.render(scene, camera);
+    if (!readyMarked) { readyMarked = true; container.classList.add('g3d-ready'); } // fades the canvas in (motion.css)
   }
 
   function resize() {

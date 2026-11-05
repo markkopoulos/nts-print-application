@@ -4,6 +4,7 @@
  */
 import { toast } from './studio.js';
 import { track } from './analytics.js';
+import { shake, success, haptic } from './motion.js';
 
 const C = window.CATALOG;
 const { t, pick } = window.I18N;
@@ -195,11 +196,13 @@ export function initQuote(studio) {
   async function refreshPreview() {
     if (!studio) return;
     const img = $('#qPreview');
-    img.classList.add('is-loading');
+    const box = img.closest('.q-preview');
+    box.classList.add('is-loading'); // shimmer until the new mockup is decoded
     try {
       img.src = await studio.snapshot(900);
+      await img.decode().catch(() => {});
     } catch (e) { /* ignore */ }
-    img.classList.remove('is-loading');
+    box.classList.remove('is-loading');
   }
 
   /* ---------- Open / close ---------- */
@@ -257,7 +260,10 @@ export function initQuote(studio) {
     if (!F('consent').checked) { setErr('consent', t('err.consent')); ok = false; }
     if (!ok) {
       const first = $('.err:not(:empty)', form);
-      first?.closest('fieldset, .field-wrap, label')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const sec = first?.closest('fieldset, .field-wrap, label');
+      sec?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => shake(sec), 280);
+      haptic(12);
       return;
     }
 
@@ -308,6 +314,7 @@ export function initQuote(studio) {
       track('quote_submit');
     } catch (err) {
       $('#qMsg').textContent = err.message || t('err.generic');
+      shake($('#qMsg'));
     } finally {
       btn.disabled = false;
       btn.classList.remove('is-loading');
@@ -354,6 +361,8 @@ export function initContact() {
     if (!form.checkValidity()) {
       msg.classList.add('is-err');
       msg.textContent = t('err.contactRequired');
+      shake(form.querySelector(':invalid')?.closest('label') || msg);
+      haptic(12);
       form.reportValidity();
       return;
     }
@@ -390,6 +399,8 @@ export function initContact() {
       fileLabel.classList.remove('has-file');
       msg.classList.add('is-ok');
       msg.textContent = t('ok.contact', { id: data.leadId });
+      success(btn, 1600);
+      haptic(18);
       track('contact_submit');
     } catch (err) {
       msg.classList.add('is-err');

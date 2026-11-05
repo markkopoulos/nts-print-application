@@ -5,6 +5,23 @@
  */
 
 let allLeads = [];
+
+/** numbers ease up to their value (skipped for reduced motion) */
+const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function countTo(el, value, format = n => String(Math.round(n)), duration = 900) {
+  if (!el) return;
+  const from = parseFloat(String(el.dataset.v || 0)) || 0;
+  el.dataset.v = value;
+  if (calm || from === value) { el.textContent = format(value); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / duration);
+    const e = 1 - Math.pow(1 - k, 4);
+    el.textContent = format(Math.round((from + (value - from) * e) * 10) / 10);
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 let currentFilter = 'all';
 let lastDaily = [];
 
@@ -70,9 +87,9 @@ function renderAnalytics(d) {
   const c = d.counts || {};
   const visitors = c.pageview || 0;
   const pct = n => (visitors ? Math.round((n / visitors) * 1000) / 10 : 0);
-  document.getElementById('kpiVisitors').textContent = visitors.toLocaleString('el-GR');
-  document.getElementById('kpiConversion').textContent = pct(c.quote_submit || 0).toLocaleString('el-GR') + '%';
-  document.getElementById('kpiContacts').textContent = (c.contact_submit || 0).toLocaleString('el-GR');
+  countTo(document.getElementById('kpiVisitors'), visitors, n => Math.round(n).toLocaleString('el-GR'));
+  countTo(document.getElementById('kpiConversion'), pct(c.quote_submit || 0), n => n.toLocaleString('el-GR') + '%');
+  countTo(document.getElementById('kpiContacts'), c.contact_submit || 0, n => Math.round(n).toLocaleString('el-GR'));
 
   document.getElementById('funnelList').innerHTML = FUNNEL.map(([key, label], i) => {
     const n = c[key] || 0;
@@ -269,8 +286,8 @@ function renderChart(daily) {
     const hq = d.quote ? (d.quote / yMax) * ih : 0;
     const hc = d.contact ? (d.contact / yMax) * ih : 0;
     const gap = hq && hc ? 2 : 0; // 2px surface gap between stacked segments
-    if (hq) svgEl('path', { class: 'c-bar c-bar--quote', d: barPath(x, m.t + ih - hq, bw, hq, !hc) }, bars);
-    if (hc) svgEl('path', { class: 'c-bar c-bar--contact', d: barPath(x, m.t + ih - hq - gap - hc, bw, hc, true) }, bars);
+    if (hq) svgEl('path', { class: 'c-bar c-bar--quote', style: `--i:${i}`, d: barPath(x, m.t + ih - hq, bw, hq, !hc) }, bars);
+    if (hc) svgEl('path', { class: 'c-bar c-bar--contact', style: `--i:${i}`, d: barPath(x, m.t + ih - hq - gap - hc, bw, hc, true) }, bars);
   });
 
   // hover layer: full-height hit targets per day
@@ -306,11 +323,11 @@ async function fetchStats() {
     const json = await res.json();
     if (json.success) {
       const d = json.data;
-      document.getElementById('statTotal').textContent = d.total || 0;
-      document.getElementById('statQuotes').textContent = d.quotes || 0;
-      document.getElementById('statNew').textContent = d.newLeads || 0;
-      document.getElementById('statPieces').textContent = d.pieces || 0;
-      document.getElementById('statWeek').textContent = d.lastWeek || 0;
+      countTo(document.getElementById('statTotal'), d.total || 0);
+      countTo(document.getElementById('statQuotes'), d.quotes || 0);
+      countTo(document.getElementById('statNew'), d.newLeads || 0);
+      countTo(document.getElementById('statPieces'), d.pieces || 0);
+      countTo(document.getElementById('statWeek'), d.lastWeek || 0);
       lastDaily = d.daily || [];
       renderChart(lastDaily);
     }
@@ -321,7 +338,14 @@ async function fetchStats() {
 
 async function fetchLeads() {
   const tbody = document.getElementById('leadsTableBody');
-  tbody.innerHTML = `<tr><td colspan="7" class="empty-state-cell">Φόρτωση δεδομένων...</td></tr>`;
+  // skeleton rows while loading
+  tbody.innerHTML = Array.from({ length: 4 }, () => `<tr aria-hidden="true">
+      <td><span class="skel" style="width:70%"></span><span class="skel" style="width:50%"></span></td>
+      <td><span class="skel" style="width:80%"></span><span class="skel" style="width:60%"></span></td>
+      <td><span class="skel" style="width:90%"></span><span class="skel" style="width:70%"></span></td>
+      <td><span class="skel" style="width:50%"></span></td><td><span class="skel" style="width:60%;margin:auto"></span></td>
+      <td><span class="skel" style="width:70%"></span></td><td><span class="skel" style="width:40%;margin-left:auto"></span></td>
+    </tr>`).join('');
 
   try {
     const res = await adminFetch('/api/leads');
@@ -366,7 +390,7 @@ function filterAndRenderLeads() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(lead => {
+  tbody.innerHTML = filtered.map((lead, rowIndex) => {
     const isQuote = lead.type === 'quote';
     const dateStr = new Date(lead.createdAt).toLocaleString('el-GR', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -443,7 +467,7 @@ function filterAndRenderLeads() {
     }
 
     return `
-      <tr class="lead-row" data-id="${lead.id}">
+      <tr class="lead-row" data-id="${lead.id}" style="--i:${Math.min(rowIndex, 12)}">
         <td>
           <div class="id-badge">#${lead.id}</div>
           <div class="lead-date">${dateStr}</div>

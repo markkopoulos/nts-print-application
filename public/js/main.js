@@ -2,7 +2,7 @@ import { initStudio } from './studio.js';
 import { initQuote, initContact } from './quote.js';
 import { createGarment3D, webglAvailable } from './garment3d.js';
 import { initLogin } from './login.js';
-import { initAnimations } from './animations.js';
+import { initMotion, flipLayout } from './motion.js';
 import { initAnalytics } from './analytics.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -87,21 +87,19 @@ if (heroEl && webglAvailable()) {
   heroEl.innerHTML = '<img src="assets/apparel/hoodie.svg" alt="" class="hero-fallback">';
 }
 
-/* Portfolio filter */
+/* Portfolio filter: cards glide to their new places (FLIP) */
 $$('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+  if (btn.classList.contains('is-active')) return;
   $$('[data-filter]').forEach(b => b.classList.toggle('is-active', b === btn));
   const f = btn.dataset.filter;
-  $$('.work').forEach(w => { w.hidden = !(f === 'all' || w.dataset.cat === f); });
+  const works = $$('.work');
+  flipLayout(works, () => works.forEach(w => { w.hidden = !(f === 'all' || w.dataset.cat === f); }));
 }));
 
-/* Motion: anime.js timelines; plain CSS fade-in as fallback (or when reduced motion is requested) */
-let animated = false;
-try { animated = initAnimations(); } catch (e) { console.warn('animations disabled:', e); }
-if (!animated) {
-  const io = new IntersectionObserver(entries => entries.forEach(en => {
-    if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
-  }), { threshold: 0.12 });
-  $$('.reveal').forEach(el => io.observe(el));
+/* Motion system (entrances, reveals, sheets, feedback). If it fails, content stays visible. */
+try { initMotion(); } catch (e) {
+  console.warn('motion disabled:', e);
+  document.documentElement.classList.remove('motion');
 }
 
 /* Translate anything created dynamically above */

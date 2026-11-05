@@ -2,6 +2,8 @@
  * Header "login" button → admin login modal → /admin dashboard.
  * If the visitor already has a valid admin session, the button goes straight to /admin.
  */
+import { shake, haptic } from './motion.js';
+
 const { t } = window.I18N;
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -65,6 +67,8 @@ export function initLogin() {
       });
       if (res.ok) { location.assign('/admin'); return; }
       msg.textContent = t(res.status === 429 ? 'err.loginRate' : res.status === 401 ? 'err.login' : 'err.generic');
+      shake(form);
+      haptic(14);
       form.elements.password.select();
     } catch (err) {
       msg.textContent = t('err.generic');

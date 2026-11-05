@@ -29,9 +29,26 @@
     const btn = e.target.closest('[data-theme-toggle]');
     if (!btn) return;
     const next = current() === 'dark' ? 'light' : 'dark';
-    root.dataset.theme = next;
-    try { localStorage.setItem(KEY, next); } catch (err) { /* storage unavailable */ }
-    sync();
+    const apply = () => {
+      root.dataset.theme = next;
+      try { localStorage.setItem(KEY, next); } catch (err) { /* storage unavailable */ }
+      sync();
+    };
+    // the new theme grows out of the toggle as a circle (View Transitions); instant elsewhere
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || calm) { apply(); return; }
+    const r = btn.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.classList.add('vt-theme');
+    const vt = document.startViewTransition(apply);
+    vt.ready.then(() => {
+      root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+        { duration: 620, easing: 'cubic-bezier(.16, 1, .3, 1)', pseudoElement: '::view-transition-new(root)' });
+    }).catch(() => {});
+    const done = () => root.classList.remove('vt-theme');
+    vt.finished.finally(done);
+    setTimeout(done, 1500); // safety net: never leave the language crossfade disabled
   });
 
   mq.addEventListener('change', () => { if (!root.dataset.theme) sync(); });
