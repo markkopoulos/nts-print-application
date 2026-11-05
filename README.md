@@ -121,7 +121,7 @@ clothes/
 │   │   ├── studio.js     # 2D & 3D Mockup Studio controller
 │   │   ├── quote.js      # Stepped φόρμα προσφορών & επαφής
 │   │   ├── main.js       # Κύρια αρχικοποίηση
-│   │   ├── animations.js # anime.js: hero, scroll reveals, micro-interactions
+│   │   ├── motion.js     # Κινήσεις: WAAPI + anime.js springs, bottom sheets, loading states
 │   │   ├── i18n.js       # Ελληνικά / Αγγλικά
 │   │   ├── theme.js      # Light / dark mode
 │   │   ├── login.js      # Κουμπί & παράθυρο σύνδεσης διαχειριστή

@@ -9,6 +9,7 @@
 import { createGarment3D, webglAvailable } from './garment3d.js';
 import { embroider } from './embroidery.js';
 import { track } from './analytics.js';
+import { crossSwap, flipSwap, pop, busy, success, play, ease } from './motion.js';
 
 const C = window.CATALOG;
 const { t, pick } = window.I18N;
@@ -85,6 +86,10 @@ export function initStudio() {
   const knock = $('#knockout');
   const knockInfo = $('#knockInfo');
   let g3d = null;
+  let ready = false; // no transitions during the first render
+  const turnTo = side => (ready && side !== state.side
+    ? flipSwap(wrap, () => setSide(side), side === 'back' ? 1 : -1)
+    : setSide(side));
 
   const cfg = () => C.garments[state.garment];
   const placements = () => cfg().placements || { front: { side: 'front', bounds: cfg().printBounds, scale: cfg().defaultScale } };
@@ -183,7 +188,7 @@ export function initStudio() {
     // jump to an enabled position on that side, if there is one
     const target = Object.keys(placements()).find(k => state.pl[k].enabled && plCfg(k).side === side);
     if (target) setActive(target);
-    else { setSide(side); if (g3d) g3d.focus(side); }
+    else { turnTo(side); if (g3d) g3d.focus(side); }
   }));
 
   /* ---------- Garments ---------- */
@@ -202,7 +207,9 @@ export function initStudio() {
     if (!plCfg(state.active) || !state.pl[state.active].enabled) state.active = 'front';
     $('#sideToggle').hidden = !hasBack();
     renderChips();
-    await setSide(plCfg(state.active).side);
+    const side = plCfg(state.active).side;
+    if (ready) await crossSwap(wrap, () => setSide(side));
+    else await setSide(side);
 
     const btn3d = $('[data-view="3d"]', root);
     btn3d.disabled = !c.has3d || !webglAvailable();
@@ -237,7 +244,7 @@ export function initStudio() {
       const src = Object.values(state.pl).find(o => o.enabled && o.userUploaded && o !== p);
       if (src && !p.userUploaded) Object.assign(p, { rawLogo: src.rawLogo, rawIsRaster: src.rawIsRaster, rawName: src.rawName, userUploaded: true });
       track('placement_add', { once: false });
-      applyLogo(key);
+      applyLogo(key).then(() => { if (!areas[key].el.hidden) pop(areas[key].img, 0.5); });
     }
     setActive(key);
   });
@@ -255,7 +262,7 @@ export function initStudio() {
     state.active = key;
     renderChips();
     const side = plCfg(key).side;
-    if (side !== state.side) setSide(side); else layoutAreas();
+    if (side !== state.side) turnTo(side); else layoutAreas();
     if (g3d) g3d.focus(key === 'back' ? 'back' : key === 'sleeve' ? 'sleeve' : 'front');
     $('#logoFileName').textContent = state.pl[key].rawName;
     $('#dropZone').classList.toggle('has-file', state.pl[key].userUploaded);
@@ -264,6 +271,13 @@ export function initStudio() {
 
   /* ---------- Logo per position ---------- */
   async function applyLogo(key) {
+    const p = state.pl[key];
+    const slow = p.rawIsRaster || state.finish === 'embroidery';
+    if (slow) busy(areas[key].el, true);
+    try { await processLogo(key); } finally { if (slow) busy(areas[key].el, false); }
+  }
+
+  async function processLogo(key) {
     const p = state.pl[key];
     let src = p.rawLogo, removed = false;
     if (state.knockout && p.rawIsRaster) {
@@ -305,7 +319,8 @@ export function initStudio() {
       $('#dropZone').classList.add('has-file');
       $$('[data-sample]', root).forEach(s => s.classList.remove('is-active'));
       track('logo_upload');
-      applyLogo(key);
+      busy($('#dropZone'), true);
+      applyLogo(key).finally(() => busy($('#dropZone'), false));
     };
     reader.readAsDataURL(file);
   }
@@ -337,9 +352,9 @@ export function initStudio() {
     $('#embNote').hidden = finish !== 'embroidery';
     if (finish === 'embroidery') {
       track('finish_embroidery');
-      stage.classList.add('is-busy');
+      busy(stage, true);
       await Promise.all(KEYS.filter(k => state.pl[k].enabled).map(ensureEmbroidery));
-      stage.classList.remove('is-busy');
+      busy(stage, false);
     }
     layoutAreas();
     syncAll3d();
@@ -420,6 +435,7 @@ export function initStudio() {
     state.view = v;
     $$('[data-view]', root).forEach(b => b.classList.toggle('is-active', b.dataset.view === v));
     stage.dataset.view = v;
+    if (ready) play($(v === '3d' ? '#studio3d' : '.stage-2d', root), [{ opacity: 0, transform: 'scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 480, easing: ease.soft });
     if (v === '3d') {
       if (!g3d) {
         g3d = createGarment3D($('#studio3d'), { garment: state.garment, color: C.colors[state.colorIndex].hex, motion: 'sway' });
@@ -486,12 +502,22 @@ export function initStudio() {
     return c.toDataURL('image/png');
   }
 
-  $('#downloadBtn').addEventListener('click', async () => {
-    const data = await snapshot();
-    const a = document.createElement('a');
-    a.href = data;
-    a.download = `mockup-${state.garment}-${Date.now().toString().slice(-5)}.png`;
-    a.click();
+  $('#downloadBtn').addEventListener('click', async e => {
+    const btn = e.currentTarget;
+    if (btn.classList.contains('is-loading')) return;
+    btn.classList.add('is-loading');
+    try {
+      const data = await snapshot();
+      const a = document.createElement('a');
+      a.href = data;
+      a.download = `mockup-${state.garment}-${Date.now().toString().slice(-5)}.png`;
+      a.click();
+      btn.classList.remove('is-loading');
+      success(btn);
+    } catch (err) {
+      btn.classList.remove('is-loading');
+      toast(t('err.generic'));
+    }
   });
 
   function getState() {
@@ -527,7 +553,7 @@ export function initStudio() {
     renderKnockInfo();
   });
 
-  setGarment(state.garment).then(() => { setColor(state.colorIndex); applyLogo('front'); });
+  setGarment(state.garment).then(() => { setColor(state.colorIndex); applyLogo('front'); ready = true; });
   return api;
 }
 
