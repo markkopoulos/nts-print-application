@@ -37,6 +37,18 @@ function profile(tbl, t) {
   return tbl[tbl.length - 1][1];
 }
 
+/** smooth 2D value noise in [0, 1] (deterministic, so garments look the same every load) */
+function hash2(x, y) {
+  const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return h - Math.floor(h);
+}
+function noise2(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+
 /* 2D artwork coordinates (600 x 650 viewBox) -> model units */
 const tx = x => x - 300;
 const ty = y => 330 - y;
@@ -102,6 +114,36 @@ function knitTexture() {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.anisotropy = 4;
   return tex;
+}
+
+/** vertical rib knit (cuffs, hem bands, collars): stripes vary along texture x */
+function ribTexture() {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 8;
+  const g = c.getContext('2d');
+  const img = g.createImageData(64, 8);
+  for (let x = 0; x < 64; x++) {
+    const v = Math.round(128 + 110 * Math.sin((x / 64) * TAU * 4));
+    for (let y = 0; y < 8; y++) { const i = (y * 64 + x) * 4; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  }
+  g.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+function scaleUV(geo, sx, sy) {
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * sx, uv.getY(i) * sy);
+  return geo;
+}
+
+/** gray vertex colours used as baked ambient occlusion */
+function setAO(geo, fn) {
+  const P = geo.attributes.position, col = new Float32Array(P.count * 3);
+  for (let i = 0; i < P.count; i++) { const a = fn(i); col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = a; }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return geo;
 }
 
 function shadowTexture() {
@@ -170,44 +212,90 @@ function fixSeam(g, rows, cols) {
   n.needsUpdate = true;
 }
 
-/** Torso tube + shoulder yoke as one smooth surface. Returns geometry and the neck ring points. */
+/**
+ * Fabric displacement (model units, outward) at angle th / height v:
+ * hem drape, bunching above rib bands, diagonal drag folds from the armpits, soft wrinkles.
+ * Calmer across the front/back centre where prints sit. All terms are periodic in th.
+ */
+function torsoDisp(m, th, v) {
+  const c = Math.cos(th), s = Math.sin(th);
+  const ex = Math.abs(spow(c, 2 / m.n));
+  const calm = 0.35 + 0.65 * ex;
+  const body = smooth(m.rib, m.rib + 0.05, v) * (1 - smooth(0.9, 1, v));
+  const crease = x => { const w = Math.sin(x); return w * Math.abs(w); }; // sharper ridges than a plain sine
+  let d = 1.5 * m.fold * (1 - smooth(0, 0.38, v)) * smooth(m.rib, m.rib + 0.05, v) *
+    crease(th * 7 + 0.6 + (noise2(c * 1.7 + 4, s * 1.7 + v * 3) - 0.5) * 3);
+  if (m.rib) d += 3.4 * Math.exp(-((v - m.rib - 0.045) ** 2) / 0.0011) * (0.45 + 0.55 * Math.sin(th * 13 + noise2(c * 2 + 9, s * 2) * 4));
+  const arm = smooth(0.55, 0.95, ex) * Math.exp(-((v - 0.72) ** 2) / 0.012);
+  d += 5 * arm * crease(v * 46 - ex * 15 + (s > 0 ? 0 : 1.4));
+  // long vertical drape folds hanging from the chest
+  d += 3.6 * calm * body * (1 - smooth(0.25, 0.7, v)) * crease(th * 9 + (noise2(c * 1.3 + 2, s * 1.3) - 0.5) * 5);
+  d += 4.2 * calm * body * (noise2(c * 2.4 + 20, s * 2.4 + v * 8.5) - 0.5);
+  return d;
+}
+
+/** point on the torso surface (v: 0 hem → 1 shoulder line) */
+function torsoPoint(m, th, v, out = new THREE.Vector3(), grow = 0) {
+  const c = Math.cos(th), s = Math.sin(th);
+  const ex = spow(c, 2 / m.n), ez = spow(s, 2 / m.n);
+  const W = profile(m.W, v), D = profile(m.D, v);
+  const top = m.topY - m.drop * Math.pow(Math.abs(ex), 1.6);
+  const k = 1 + (torsoDisp(m, th, v) + grow) / W;
+  return out.set(W * ex * k, m.hemY + v * (top - m.hemY), D * ez * k);
+}
+
+/** point on the shoulder yoke (t: 0 shoulder line → 1 neckline) */
+function yokePoint(m, th, t, out = new THREE.Vector3()) {
+  const c = Math.cos(th), s = Math.sin(th);
+  const ex = spow(c, 2 / m.n), ez = spow(s, 2 / m.n);
+  const W = profile(m.W, 1), D = profile(m.D, 1);
+  const topAt = m.topY - m.drop * Math.pow(Math.abs(ex), 1.6);
+  const ny = m.neck.y - m.neck.dip * Math.pow(Math.max(0, s), 2);
+  const e = 1 - Math.pow(1 - t, 1.5);
+  return out.set(
+    lerp(W * ex, m.neck.rx * c, e),
+    lerp(topAt, ny, t) + m.bulge * Math.sin(Math.PI * t) * (1 - 0.6 * Math.abs(ex)),
+    lerp(D * ez, m.neck.rz * s, e)
+  );
+}
+
+/** Torso tube + shoulder yoke as one smooth surface, with baked AO. Returns geometry and the neck ring. */
 function buildTorso(m) {
-  const U = 112, V = 72, K = 12;
+  const U = 128, V = 96, K = 14;
   const rows = V + K + 1, cols = U + 1;
-  const pos = new Float32Array(rows * cols * 3), uv = new Float32Array(rows * cols * 2);
+  const pos = new Float32Array(rows * cols * 3), uv = new Float32Array(rows * cols * 2), ao = new Float32Array(rows * cols);
   const neckRing = [];
+  const P = new THREE.Vector3();
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      const th = (i / U) * TAU, c = Math.cos(th), s = Math.sin(th);
-      const ex = spow(c, 2 / m.n), ez = spow(s, 2 / m.n);
-      let x, y, z;
-      const topAt = m.topY - m.drop * Math.pow(Math.abs(ex), 1.6);
+      const th = (i / U) * TAU;
+      const ex = Math.abs(spow(Math.cos(th), 2 / m.n));
+      let a = 1;
       if (j <= V) {
         const v = j / V;
-        const W = profile(m.W, v), D = profile(m.D, v);
-        y = m.hemY + v * (topAt - m.hemY);
-        // soft drape folds towards the hem (none inside the rib band)
-        const fold = m.fold * (1 - smooth(0, 0.38, v)) * smooth(m.rib, m.rib + 0.05, v) * Math.sin(th * 7 + 0.6);
-        const k = 1 + fold / W;
-        x = W * ex * k; z = D * ez * k;
+        torsoPoint(m, th, v, P);
+        // shade where the sleeves meet / cover the body, and inside the rib crease
+        a -= 0.26 * smooth(0.72, 1, ex) * smooth(0.5, 0.86, v) * (1 - smooth(0.95, 1.0, v) * 0.4);
+        if (m.sleeve.long) a -= 0.16 * smooth(0.8, 1, ex) * smooth(0.12, 0.4, v) * (1 - smooth(0.7, 0.86, v));
+        if (m.rib) a -= 0.1 * Math.exp(-((v - m.rib) ** 2) / 0.0004);
+        a -= 0.08 * (1 - smooth(0, 0.06, v));
       } else {
         const t = (j - V) / K;
-        const W = profile(m.W, 1), D = profile(m.D, 1);
-        const ny = m.neck.y - m.neck.dip * Math.pow(Math.max(0, s), 2);
-        const e = 1 - Math.pow(1 - t, 1.5);
-        x = lerp(W * ex, m.neck.rx * c, e);
-        z = lerp(D * ez, m.neck.rz * s, e);
-        y = lerp(topAt, ny, t) + m.bulge * Math.sin(Math.PI * t) * (1 - 0.6 * Math.abs(ex));
-        if (j === rows - 1) neckRing.push(new THREE.Vector3(x, y, z));
+        yokePoint(m, th, t, P);
+        a -= 0.14 * t * t; // collar shades the neckline
+        if (j === rows - 1) neckRing.push(P.clone());
       }
       const p = (j * cols + i) * 3;
-      pos[p] = x; pos[p + 1] = y; pos[p + 2] = z;
+      pos[p] = P.x; pos[p + 1] = P.y; pos[p + 2] = P.z;
       const q = (j * cols + i) * 2;
-      uv[q] = (i / U) * 20; uv[q + 1] = ((y - m.hemY) / 100 + (j > V ? (j - V) / K : 0)) * 2.5;
+      uv[q] = (i / U) * 20; uv[q + 1] = ((P.y - m.hemY) / 100 + (j > V ? (j - V) / K : 0)) * 2.5;
+      ao[j * cols + i] = a;
     }
   }
   neckRing.pop(); // last equals first (closed ring)
-  return { geo: gridGeometry(pos, uv, rows, cols, true), neckRing };
+  const geo = gridGeometry(pos, uv, rows, cols, true);
+  setAO(geo, i => ao[i]);
+  return { geo, neckRing };
 }
 
 /** Front surface depth of the torso at (x, y) – used to lay the logo and pocket on the fabric */
@@ -220,9 +308,8 @@ function torsoFrontZ(m, x, y) {
   W = profile(m.W, v);
   const D = profile(m.D, v);
   const cth = spow(Math.min(0.999, Math.abs(x) / W), m.n / 2);
-  const th = Math.atan2(Math.sqrt(1 - cth * cth), cth);
-  const fold = m.fold * (1 - smooth(0, 0.38, v)) * smooth(m.rib, m.rib + 0.05, v) * Math.sin(th * 7 + 0.6);
-  const k = 1 + fold / W;
+  const th = Math.atan2(Math.sqrt(1 - cth * cth), x >= 0 ? cth : -cth);
+  const k = 1 + torsoDisp(m, th, v) / W;
   const r = Math.min(0.999, Math.abs(x) / (W * k));
   return k * D * Math.pow(1 - Math.pow(r, m.n), 1 / m.n);
 }
@@ -230,17 +317,27 @@ function torsoFrontZ(m, x, y) {
 /** Closed ring of points at height v (for seams / rib lines) */
 function torsoRing(m, v, grow = 1) {
   const pts = [];
-  for (let i = 0; i < 96; i++) {
-    const th = (i / 96) * TAU, ex = spow(Math.cos(th), 2 / m.n), ez = spow(Math.sin(th), 2 / m.n);
-    const W = profile(m.W, v) * grow, D = profile(m.D, v) * grow;
-    const top = m.topY - m.drop * Math.pow(Math.abs(ex), 1.6);
-    pts.push(new THREE.Vector3(W * ex, m.hemY + v * (top - m.hemY), D * ez));
-  }
+  for (let i = 0; i < 128; i++) pts.push(torsoPoint(m, (i / 128) * TAU, v, new THREE.Vector3(), grow));
   return pts;
+}
+
+/** ribbed band hugging the torso between v0 and v1 (hem rib) */
+function ribBand(m, v0, v1, grow) {
+  const U = 128, R = 8, rows = R + 1, cols = U + 1;
+  const pos = new Float32Array(rows * cols * 3), uv = new Float32Array(rows * cols * 2), P = new THREE.Vector3();
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      torsoPoint(m, (i / U) * TAU, lerp(v0, v1, j / R), P, grow);
+      pos.set([P.x, P.y, P.z], (j * cols + i) * 3);
+      uv.set([(i / U) * 70, j / R], (j * cols + i) * 2);
+    }
+  }
+  return gridGeometry(pos, uv, rows, cols, true);
 }
 
 /** Tapered sleeve tube along a curve; returns { geo, end, tangent, endR } */
 function buildSleeve(sp, side) {
+  const inward = new THREE.Vector3(-side, 0, 0);
   const pts = sp.pts.map(([x, y]) => new THREE.Vector3(side * x, y, 0));
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
   const T = 72, R = 32;
@@ -258,6 +355,7 @@ function buildSleeve(sp, side) {
   const P = geo.attributes.position, UV = geo.attributes.uv;
   const ctr = new THREE.Vector3(), d = new THREE.Vector3();
   const len = curve.getLength();
+  const ao = new Float32Array(P.count);
   for (let i = 0; i <= T; i++) {
     const t = i / T;
     curve.getPointAt(t, ctr);
@@ -265,14 +363,51 @@ function buildSleeve(sp, side) {
     for (let j = 0; j <= R; j++) {
       const k = i * (R + 1) + j;
       d.fromBufferAttribute(P, k).sub(ctr);
+      // baked AO: darker where the sleeve joins the body and on the side facing the torso
+      const facing = Math.max(0, d.dot(inward));
+      const a = (j / R) * TAU;
+      let f = 0;
+      if (sp.long) {
+        f += 0.045 * Math.sin(t * 40 + a * 2 + noise2(t * 6 + Math.cos(a) * 1.5, Math.sin(a) * 1.5) * 2) * smooth(0.36, 0.48, t) * (1 - smooth(0.74, 0.8, t));
+        f += 0.07 * Math.exp(-((t - 0.83) ** 2) / 0.0016) * (0.5 + 0.5 * Math.sin(a * 5 + t * 30));
+      } else {
+        f += 0.022 * Math.sin(a * 3 + t * 11) * smooth(0.35, 0.6, t);
+      }
+      ao[k] = 1 - 0.22 * (1 - smooth(0.06, 0.24, t)) - (sp.long ? 0.16 : 0.08) * facing * smooth(0.12, 0.3, t);
       d.z *= sp.zs;
-      d.multiplyScalar(r).add(ctr);
+      d.multiplyScalar(r * (1 + f)).add(ctr);
       P.setXYZ(k, d.x, d.y, d.z);
       UV.setXY(k, (t * len) / 40, (j / R) * 8);
+      ao[k] -= Math.max(0, -f) * 2.2; // folds' valleys a touch darker
     }
   }
   geo.computeVertexNormals();
+  fixSeam(geo, T + 1, R + 1);
+  setAO(geo, k => ao[k]);
   return { geo, curve, radius, endR: radius(1) };
+}
+
+/** ribbed cuff: constant-radius sleeve section between t0 and t1 */
+function cuffBand(curve, t0, t1, r, zs) {
+  const pts = [];
+  for (let k = 0; k <= 6; k++) pts.push(curve.getPointAt(lerp(t0, t1, k / 6)));
+  const sub = new THREE.CatmullRomCurve3(pts);
+  const T = 10, R = 40;
+  const geo = new THREE.TubeGeometry(sub, T, 1, R, false);
+  const P = geo.attributes.position, UV = geo.attributes.uv, ctr = new THREE.Vector3(), d = new THREE.Vector3();
+  for (let i = 0; i <= T; i++) {
+    sub.getPointAt(i / T, ctr);
+    for (let j = 0; j <= R; j++) {
+      const k = i * (R + 1) + j;
+      d.fromBufferAttribute(P, k).sub(ctr);
+      d.z *= zs;
+      d.multiplyScalar(r).add(ctr);
+      P.setXYZ(k, d.x, d.y, d.z);
+      UV.setXY(k, (j / R) * 28, i / T); // stripes run along the sleeve
+    }
+  }
+  geo.computeVertexNormals();
+  return geo;
 }
 
 function tube(points, r, closed = false, seg = 96) {
@@ -300,13 +435,13 @@ export function createGarment3D(container, opts = {}) {
 
   const scene = new THREE.Scene();
   scene.environment = studioEnvironment(renderer);
-  scene.environmentIntensity = 0.75;
+  scene.environmentIntensity = 0.66;
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   camera.position.set(0, 0.08, 5.4);
 
   // Direct lights (key casts soft self-shadows: sleeves, hood, drawstrings)
   scene.add(new THREE.HemisphereLight(0xffffff, 0xcfd3ea, 0.45));
-  const key = new THREE.DirectionalLight(0xffffff, 1.9);
+  const key = new THREE.DirectionalLight(0xffffff, 2.15);
   key.position.set(2.2, 3.2, 4);
   key.castShadow = true;
   key.shadow.mapSize.set(handheld ? 512 : 1024, handheld ? 512 : 1024);
@@ -344,7 +479,13 @@ export function createGarment3D(container, opts = {}) {
     sheen: 0.7, sheenRoughness: 0.8, sheenColor: new THREE.Color(0xffffff),
     bumpMap: knit, bumpScale: 0.22
   });
-  const fabricShade = fabric.clone();              // under-brim, seams
+  const fabricAO = fabric.clone();                 // torso + sleeves: baked ambient occlusion in vertex colours
+  fabricAO.vertexColors = true;
+  const rib = ribTexture();
+  const ribMat = fabric.clone();                   // cuffs, hem bands, collars
+  ribMat.bumpMap = rib;
+  ribMat.bumpScale = 1.4;
+  const fabricShade = fabric.clone();              // under-brim, seams, stitching
   const lining = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1, side: THREE.DoubleSide, bumpMap: knit, bumpScale: 0.5 });
   const cordMat = new THREE.MeshStandardMaterial({ color: 0xf1f1ec, roughness: 0.8 });
   const metalMat = new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.28, metalness: 0.9 });
@@ -372,7 +513,8 @@ export function createGarment3D(container, opts = {}) {
   /* ---------------- Builders per garment ---------------- */
   function buildTop(m) {
     const { geo, neckRing } = buildTorso(m);
-    add(geo, fabric);
+    add(geo, fabricAO);
+    const stitch = (pts, r = 0.9, closed = false) => add(tube(pts, r, closed, Math.max(16, pts.length * 2)), fabricShade, { shadowCast: false });
 
     // dark inside visible through the neck and the hem
     const inner = new THREE.CylinderGeometry(1, 1, 1, 48, 1, true);
@@ -384,28 +526,58 @@ export function createGarment3D(container, opts = {}) {
     hemCap.scale.set(profile(m.W, 0) * 0.97, profile(m.D, 0) * 0.97, 1);
     hemCap.position.y = m.hemY + 3;
 
-    // neckline rib
-    if (m.neck.rib) add(tube(neckRing, m.neck.rib, true, 128), fabric);
-    // hem: rib seam line or a folded hem lip
-    if (m.rib) add(tube(torsoRing(m, m.rib, 1.012), 2.4, true), fabricShade, { shadowCast: false });
-    else add(tube(torsoRing(m, 0.012, 1.01), 3.2, true), fabric, { shadowCast: false });
+    // neckline: ribbed collar
+    if (m.neck.rib) add(scaleUV(tube(neckRing, m.neck.rib, true, 160), 90, 1), ribMat);
 
-    // sleeves (+ dark sleeve openings, cuff seam)
+    // hem: ribbed band (sweatshirt / hoodie) or a folded hem with twin-needle stitching (T-shirt)
+    if (m.rib) {
+      add(ribBand(m, 0, m.rib, 1.6), ribMat, { shadowCast: false });
+      stitch(torsoRing(m, m.rib, 2.2), 1.1, true);
+    } else {
+      add(tube(torsoRing(m, 0.004, 0.8), 1.8, true), fabric, { shadowCast: false });
+      stitch(torsoRing(m, 0.03, 1.1), 0.7, true);
+      stitch(torsoRing(m, 0.042, 1.1), 0.7, true);
+    }
+
+    // side seams and shoulder seams
+    [0, Math.PI].forEach(th => {
+      const side = [];
+      for (let v = (m.rib || 0.02) + 0.01; v <= 0.9; v += 0.03) side.push(torsoPoint(m, th, v, new THREE.Vector3(), 1.0));
+      stitch(side, 1.0);
+      const shoulder = [];
+      for (let t = 0.02; t <= 0.98; t += 0.08) shoulder.push(yokePoint(m, th, t).multiplyScalar(1.006));
+      stitch(shoulder, 1.0);
+    });
+
+    // sleeves: AO-shaded tube, armhole seam, cuff or hem, light-dark opening
     [-1, 1].forEach(side => {
-      const sl = buildSleeve(m.sleeve, side);
-      add(sl.geo, fabric);
-      if (side === 1) sleeveInfo = { curve: sl.curve, radius: sl.radius, zs: m.sleeve.zs, long: m.sleeve.long };
+      const sp = m.sleeve;
+      const sl = buildSleeve(sp, side);
+      add(sl.geo, fabricAO);
+      if (side === 1) sleeveInfo = { curve: sl.curve, radius: sl.radius, zs: sp.zs, long: sp.long };
+      const ring = (t, grow, r) => {
+        const pts = [], c = sl.curve.getPointAt(t), tn = sl.curve.getTangentAt(t);
+        const n = new THREE.Vector3(0, 0, 1).cross(tn).normalize(), b = new THREE.Vector3().crossVectors(tn, n).normalize();
+        for (let k = 0; k < 40; k++) {
+          const a = (k / 40) * TAU, o = n.clone().multiplyScalar(Math.cos(a)).addScaledVector(b, Math.sin(a));
+          o.z *= sp.zs;
+          pts.push(o.multiplyScalar(sl.radius(t) + grow).add(c));
+        }
+        return pts;
+      };
+      stitch(ring(sp.long ? 0.2 : 0.3, 0.5), 1.0, true);           // armhole seam
       const end = sl.curve.getPointAt(1), tan = sl.curve.getTangentAt(1);
+      if (sp.cuff) {
+        add(cuffBand(sl.curve, 0.885, 1, sp.cuffR + 0.9, sp.zs), ribMat);
+        stitch(ring(0.885, 1.6), 1.0, true);
+      } else {
+        add(tube(ring(0.998, 0.3), 1.8, true), fabric, { shadowCast: false }); // folded sleeve hem
+        stitch(ring(0.93, 0.6), 0.7, true);
+      }
       const cap = add(new THREE.CircleGeometry(1, 32), lining, { shadowCast: false });
       cap.scale.set(sl.endR * 0.93, sl.endR * 0.93, 1);
-      cap.position.copy(end).addScaledVector(tan, -1.5);
+      cap.position.copy(end).addScaledVector(tan, -2.5);
       cap.quaternion.setFromUnitVectors(Z_AXIS, tan);
-      if (m.sleeve.cuff) {
-        const p = sl.curve.getPointAt(0.885), tn = sl.curve.getTangentAt(0.885);
-        const ring = add(new THREE.TorusGeometry(m.sleeve.cuffR + 1.5, 2.2, 8, 48), fabricShade, { shadowCast: false });
-        ring.position.copy(p);
-        ring.quaternion.setFromUnitVectors(Z_AXIS, tn);
-      }
     });
 
     if (m.hood) buildHood(m);
@@ -416,12 +588,24 @@ export function createGarment3D(container, opts = {}) {
     // sphere whose pole faces forward (+z): the front cap becomes the face opening,
     // and a sector at the bottom is left open where the hood meets the neck
     const open = 0.62, gap = 0.78;
-    const g = new THREE.SphereGeometry(1, 64, 40, Math.PI / 2 + gap, TAU - 2 * gap, open, Math.PI - open);
+    const g = new THREE.SphereGeometry(1, 72, 48, Math.PI / 2 + gap, TAU - 2 * gap, open, Math.PI - open);
     g.rotateX(Math.PI / 2);
+    // shape it like a real hood: peaked at the back-top, narrower at the top, flaring onto the shoulders
+    const deform = v => {
+      const back = Math.max(0, -v.z), top = Math.max(0, v.y);
+      v.y += 0.16 * back * top;
+      v.z -= 0.14 * back * top;
+      v.x *= 1 - 0.17 * top;
+      if (v.y < 0) v.x *= 1 + 0.14 * -v.y;
+      return v;
+    };
+    { const P = g.attributes.position, v = new THREE.Vector3();
+      for (let i = 0; i < P.count; i++) { deform(v.fromBufferAttribute(P, i)); P.setXYZ(i, v.x, v.y, v.z); }
+      g.computeVertexNormals(); }
     const place = mesh => {
-      mesh.scale.set(100, 92, 72);
-      mesh.position.set(0, m.neck.y + 6, -66);
-      mesh.rotation.x = -1.0;
+      mesh.scale.set(108, 92, 50);
+      mesh.position.set(0, m.neck.y - 16, -68);
+      mesh.rotation.x = -1.42;
     };
     const outer = add(g, fabric);
     place(outer);
@@ -435,10 +619,14 @@ export function createGarment3D(container, opts = {}) {
     for (let k = 0; k <= 40; k++) {
       const phi = Math.PI / 2 + gap + (k / 40) * (TAU - 2 * gap);
       const p = new THREE.Vector3(-Math.cos(phi) * Math.sin(open), Math.cos(open), Math.sin(phi) * Math.sin(open));
-      p.set(p.x, -p.z, p.y).multiplyScalar(0.985).applyMatrix4(outer.matrix);
+      deform(p.set(p.x, -p.z, p.y)).multiplyScalar(0.985).applyMatrix4(outer.matrix);
       rimPts.push(p);
     }
     add(tube(rimPts, 8, false, 80), fabric);
+    // centre back seam over the crown
+    const seam = [];
+    for (let a = open + 0.1; a <= Math.PI + 0.55; a += 0.08) seam.push(deform(new THREE.Vector3(0, Math.sin(a), Math.cos(a))).multiplyScalar(1.008).applyMatrix4(outer.matrix));
+    add(tube(seam, 1.2, false, 60), fabricShade, { shadowCast: false });
 
     // drawstrings with metal aglets
     [-1, 1].forEach((side, i) => {
@@ -510,6 +698,9 @@ export function createGarment3D(container, opts = {}) {
       }
       add(tube(pts, 1.8, false, 32), fabricShade, { shadowCast: false });
     }
+    const baseRing = [];
+    for (let k = 0; k < 72; k++) { const a = (k / 72) * TAU; baseRing.push(new THREE.Vector3(m.Rx * Math.sin(a) * 1.004, m.base + 1.5, m.Rz * Math.cos(a) * 1.004)); }
+    add(tube(baseRing, 3, true, 144), fabric, { shadowCast: false });
     const btn = add(new THREE.SphereGeometry(13, 20, 12), fabric);
     btn.scale.y = 0.5;
     btn.position.y = m.base + m.Ry + 2;
@@ -522,7 +713,7 @@ export function createGarment3D(container, opts = {}) {
       const e = Math.abs(a) / a1;                         // 0 centre → 1 ends
       const reach = 132 * Math.pow(Math.cos(e * Math.PI / 2), 0.7);
       const x = ix + Math.sin(a) * reach * 0.55 * s, z = iz + Math.cos(a) * reach * s;
-      const y = m.base - 3 - 14 * s * s - 20 * e * e * s + off;
+      const y = m.base - 3 - 12 * s * s - 13 * e * e * s + off;
       return [x, y, z];
     };
     const makeBrim = (off, flip) => {
@@ -544,11 +735,51 @@ export function createGarment3D(container, opts = {}) {
     const edge = [];
     for (let i = 0; i <= A; i++) { const [x, y, z] = brimPoint(lerp(a0, a1, i / A), 1, 0.5); edge.push(new THREE.Vector3(x, y, z)); }
     add(tube(edge, 2.4, false, 64), fabric);
-    [0.35, 0.6, 0.82].forEach(s => {
+    // rows of stitching running along the brim edge
+    [0.8, 0.86, 0.92].forEach(s => {
       const line = [];
-      for (let i = 0; i <= A; i++) { const [x, y, z] = brimPoint(lerp(a0 * 0.97, a1 * 0.97, i / A), s, 2.5); line.push(new THREE.Vector3(x, y, z)); }
-      add(tube(line, 0.7, false, 64), fabricShade, { shadowCast: false });
+      for (let i = 0; i <= A; i++) { const [x, y, z] = brimPoint(lerp(a0 * 0.9, a1 * 0.9, i / A), s, 2.35); line.push(new THREE.Vector3(x, y, z)); }
+      add(tube(line, 0.45, false, 64), fabricShade, { shadowCast: false });
     });
+
+    const domePoint = (phi, y, grow = 1.004) => {
+      const r = Math.sqrt(Math.max(0, 1 - ((y - m.base) / m.Ry) ** 2));
+      return new THREE.Vector3(m.Rx * r * Math.sin(phi) * grow, y, m.Rz * r * Math.cos(phi) * grow);
+    };
+    // eyelets on the side/back panels
+    for (let k = 1; k < 6; k++) {
+      const phi = (k / 6) * TAU, p = domePoint(phi, m.base + m.Ry * 0.62, 1.006);
+      const eye = add(new THREE.TorusGeometry(3.6, 1.1, 8, 20), fabricShade, { shadowCast: false });
+      eye.position.copy(p);
+      eye.lookAt(p.clone().multiplyScalar(2).setY(p.y * 2 - m.base));
+      const hole = add(new THREE.CircleGeometry(2.6, 16), lining, { shadowCast: false });
+      hole.position.copy(p);
+      hole.lookAt(eye.position.clone().add(eye.getWorldDirection(new THREE.Vector3())));
+    }
+    // back arch opening with an adjustable strap and buckle
+    const archW = 0.36, archH = 46;
+    const arch = new THREE.Shape();
+    arch.moveTo(-archW, 0);
+    arch.bezierCurveTo(-archW, archH * 0.9, archW, archH * 0.9, archW, 0);
+    arch.lineTo(-archW, 0);
+    const ag = new THREE.ShapeGeometry(arch, 24);
+    { const P = ag.attributes.position;
+      for (let i = 0; i < P.count; i++) { const v = domePoint(Math.PI + P.getX(i), m.base + P.getY(i), 1.003); P.setXYZ(i, v.x, v.y, v.z); }
+      ag.computeVertexNormals(); }
+    add(ag, lining, { shadowCast: false });
+    const archEdge = [];
+    for (let k = 0; k <= 24; k++) {
+      const tt = k / 24, u = lerp(-archW, archW, tt);
+      const h = archH * 0.68 * Math.sin(Math.PI * tt) ** 0.8;
+      archEdge.push(domePoint(Math.PI + u, m.base + h, 1.008));
+    }
+    add(tube(archEdge, 1.6, false, 48), fabric, { shadowCast: false });
+    const strap = [];
+    for (let k = 0; k <= 16; k++) strap.push(domePoint(Math.PI + lerp(-archW - 0.06, archW + 0.06, k / 16), m.base + 9, 1.02));
+    add(tube(strap, 3.2, false, 32), fabricShade);
+    const buckle = add(new THREE.BoxGeometry(16, 9, 3.5), metalMat);
+    buckle.position.copy(domePoint(Math.PI + 0.12, m.base + 9, 1.045));
+    buckle.lookAt(buckle.position.clone().multiplyScalar(2).setY(buckle.position.y));
   }
 
   /* front surface depth for logo placement */
@@ -799,8 +1030,12 @@ export function createGarment3D(container, opts = {}) {
     fabric.color.lerp(targetColor, 0.12);
     fabric.sheenColor.copy(fabric.color).lerp(white, 0.3);
     fabricShade.color.copy(fabric.color).multiplyScalar(0.72);
+    fabricAO.color.copy(fabric.color);
+    fabricAO.sheenColor.copy(fabric.sheenColor);
+    ribMat.color.copy(fabric.color).multiplyScalar(0.96);
+    ribMat.sheenColor.copy(fabric.sheenColor);
     fabricShade.sheenColor.copy(fabric.sheenColor).multiplyScalar(0.7);
-    lining.color.copy(fabric.color).multiplyScalar(0.28);
+    lining.color.copy(fabric.color).multiplyScalar(0.42);
 
     renderer.render(scene, camera);
     if (!readyMarked) { readyMarked = true; container.classList.add('g3d-ready'); } // fades the canvas in (motion.css)
