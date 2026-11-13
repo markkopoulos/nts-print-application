@@ -11,9 +11,9 @@
   --line: #e6e7ee;
   --line-2: #d8daea;
   --bg: #f6f7fc;
-  --brand: #2c3192;
-  --brand-d: #1f2372;
-  --brand-l: #4a50c4;
+  --brand: #7b1e33;
+  --brand-d: #5c1626;
+  --brand-l: #a3344d;
   --yellow: #f4cf1d;
   --ok: #1f9d55;
   --err: #d0312d;
@@ -22,13 +22,13 @@
   --r: 14px;
   --r-l: 20px;
   --sh-s: 0 1px 3px rgba(22, 23, 43, 0.05);
-  --sh: 0 10px 30px -10px rgba(31, 35, 114, 0.12), 0 2px 6px rgba(22, 23, 43, 0.04);
+  --sh: 0 10px 30px -10px rgba(92, 22, 38, 0.12), 0 2px 6px rgba(22, 23, 43, 0.04);
   --surface: #ffffff;
-  --tint: #eef0fb;
+  --tint: #f7ecef;
   --soft: #fafbfe;
   --soft-2: #f1f2f6;
   --band: #16172b;
-  --band-2: #1f2372;
+  --band-2: #5c1626;
   --ok-bg: #eaf7ef;
   --err-bg: #fdf2f2;
   --warn: #a07804;
@@ -36,7 +36,7 @@
   --violet: #7c3aed;
   --violet-bg: #f3ebfc;
   /* chart series (validated: lightness band, CVD separation, contrast) */
-  --series-quote: #4a50c4;
+  --series-quote: #9c2f48;
   --series-contact: #b88a00;
   color-scheme: light;
 }
@@ -52,14 +52,14 @@
     --line-2: #2a3858;
     --bg: #080c14;
     --surface: #111a2e;
-    --tint: #1b2849;
+    --tint: #2a1a26;
     --soft: #0d1424;
     --soft-2: #162238;
     --band: #0b111e;
     --band-2: #162238;
-    --brand: #5d63dc;
-    --brand-d: #4a50c4;
-    --brand-l: #9aa0ff;
+    --brand: #c2536a;
+    --brand-d: #8f2a40;
+    --brand-l: #dc8396;
     --ok: #34d399;
     --ok-bg: #0f2e22;
     --err: #f87171;
@@ -68,7 +68,7 @@
     --warn-bg: #33290a;
     --violet: #b794f6;
     --violet-bg: #2a1c47;
-    --series-quote: #7c82ea;
+    --series-quote: #c25a70;
     --series-contact: #b08a12;
     --sh-s: 0 1px 3px rgba(0, 0, 0, 0.4);
     --sh: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -84,14 +84,14 @@
   --line-2: #2a3858;
   --bg: #080c14;
   --surface: #111a2e;
-  --tint: #1b2849;
+  --tint: #2a1a26;
   --soft: #0d1424;
   --soft-2: #162238;
   --band: #0b111e;
   --band-2: #162238;
-  --brand: #5d63dc;
-  --brand-d: #4a50c4;
-  --brand-l: #9aa0ff;
+  --brand: #c2536a;
+  --brand-d: #8f2a40;
+  --brand-l: #dc8396;
   --ok: #34d399;
   --ok-bg: #0f2e22;
   --err: #f87171;
@@ -100,7 +100,7 @@
   --warn-bg: #33290a;
   --violet: #b794f6;
   --violet-bg: #2a1c47;
-  --series-quote: #7c82ea;
+  --series-quote: #c25a70;
   --series-contact: #b08a12;
   --sh-s: 0 1px 3px rgba(0, 0, 0, 0.4);
   --sh: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -211,7 +211,7 @@ body.admin-body {
   outline: none;
   border-color: var(--brand);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(44, 49, 146, 0.12);
+  box-shadow: 0 0 0 4px rgba(123, 30, 51, 0.12);
 }
 
 .btn-login {
@@ -292,7 +292,7 @@ body.admin-body {
   background: var(--tint);
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(44, 49, 146, 0.2);
+  border: 1px solid rgba(123, 30, 51, 0.2);
 }
 
 .admin-nav-actions {
@@ -479,7 +479,7 @@ body.admin-body {
   outline: none;
   border-color: var(--brand);
   background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(44, 49, 146, 0.1);
+  box-shadow: 0 0 0 3px rgba(123, 30, 51, 0.1);
 }
 
 .export-btn {
@@ -725,7 +725,7 @@ body.admin-body {
 .status-select.contacted {
   background: var(--tint);
   color: var(--brand);
-  border-color: rgba(44, 49, 146, 0.3);
+  border-color: rgba(123, 30, 51, 0.3);
 }
 
 .status-select.completed {
@@ -1042,3 +1042,4 @@ html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(roo
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+.chart-tip[hidden] { display: none; }

@@ -21,7 +21,7 @@
       b.classList.toggle('is-dark', dark);
     });
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', dark ? '#080c14' : '#2c3192');
+    if (meta) meta.setAttribute('content', dark ? '#080c14' : '#7b1e33');
     window.dispatchEvent(new CustomEvent('themechange', { detail: current() }));
   }
 

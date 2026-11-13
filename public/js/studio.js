@@ -489,7 +489,7 @@ export function initStudio() {
     c.width = W * sides.length; c.height = H;
     const g = c.getContext('2d');
     const bg = g.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#f5f6fc'); bg.addColorStop(1, '#e9ebf7');
+    bg.addColorStop(0, '#f8f5f6'); bg.addColorStop(1, '#eee7e9');
     g.fillStyle = bg; g.fillRect(0, 0, c.width, H);
     for (let i = 0; i < sides.length; i++) await drawSide(g, sides[i], i * W, W, H);
 

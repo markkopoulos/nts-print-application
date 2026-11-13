@@ -172,7 +172,7 @@ function studioEnvironment(renderer) {
   };
   panel(4, 3, 0xffffff, 7, [3, 4, 4]);      // key soft-box
   panel(2.5, 4, 0xfff3e0, 2.6, [-5, 1, 2]); // warm fill
-  panel(5, 1.6, 0x9aa2ff, 4, [-1, 3, -5]);  // cool rim
+  panel(5, 1.6, 0xf2c9d1, 3.6, [-1, 3, -5]); // soft warm rim
   panel(8, 8, 0x5c5f70, 1.2, [0, -5.5, 0]); // floor bounce
   const tex = pm.fromScene(env, 0.04).texture;
   pm.dispose();
@@ -450,7 +450,7 @@ export function createGarment3D(container, opts = {}) {
   key.shadow.normalBias = 0.02;
   key.shadow.radius = 5;
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x8f97ff, 1.1);
+  const rim = new THREE.DirectionalLight(0xf3c7cf, 1.0);
   rim.position.set(-2.5, 2, -3.5);
   scene.add(rim);
 
