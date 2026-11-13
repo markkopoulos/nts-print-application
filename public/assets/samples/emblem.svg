@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" width="260" height="260">
-  <circle cx="130" cy="130" r="118" fill="#2c3192"/>
+  <circle cx="130" cy="130" r="118" fill="#7b1e33"/>
   <circle cx="130" cy="130" r="104" fill="none" stroke="#f4cf1d" stroke-width="3" stroke-dasharray="7 6"/>
   <path d="M130 52 L149 104 L204 104 L160 136 L176 190 L130 158 L84 190 L100 136 L56 104 L111 104 Z" fill="#f4cf1d"/>
   <text x="130" y="226" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="15" letter-spacing="5" fill="#ffffff">EST. 2026</text>

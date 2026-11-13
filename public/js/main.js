@@ -40,7 +40,7 @@ $$('[data-pick]').forEach(el => el.addEventListener('click', e => {
 const heroEl = $('#hero3d');
 if (heroEl && webglAvailable()) {
   const heroColors = [
-    { hex: '#2c3192', logo: 'assets/samples/logo-light.svg', name: { el: 'Royal', en: 'Royal' } },
+    { hex: '#6e1a2d', logo: 'assets/samples/logo-light.svg', name: { el: 'Μπορντό', en: 'Burgundy' } },
     { hex: '#17181c', logo: 'assets/samples/logo-light.svg', name: { el: 'Μαύρο', en: 'Black' } },
     { hex: '#f6f6f3', logo: 'assets/samples/logo-dark.svg', name: { el: 'Λευκό', en: 'White' } },
     { hex: '#d9ccb2', logo: 'assets/samples/logo-dark.svg', name: { el: 'Sand', en: 'Sand' } },

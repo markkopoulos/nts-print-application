@@ -85,7 +85,8 @@ window.CATALOG = {
     { name: { el: 'Sand', en: 'Sand' }, hex: '#d9ccb2', light: true },
     { name: { el: 'Olive', en: 'Olive' }, hex: '#4a5639' },
     { name: { el: 'Κίτρινο', en: 'Yellow' }, hex: '#f4cf1d', light: true },
-    { name: { el: 'Κόκκινο', en: 'Red' }, hex: '#c3222b' }
+    { name: { el: 'Κόκκινο', en: 'Red' }, hex: '#c3222b' },
+    { name: { el: 'Μπορντό', en: 'Burgundy' }, hex: '#6e1a2d' }
   ],
 
   /* print positions shown in the studio; pos = index into `positions` below (quote form) */
