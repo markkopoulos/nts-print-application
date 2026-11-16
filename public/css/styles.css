@@ -923,3 +923,37 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   .rv-rail span { display: block; height: 100%; width: var(--w, 20%); border-radius: 3px; background: var(--brand); transform: translateX(var(--x, 0%)); }
   .rv-actions { display: none; }
 }
+
+/* =====================================================================
+   Our work: real photos + full-screen viewer
+   ===================================================================== */
+.works--photos { grid-auto-rows: 300px; grid-auto-flow: dense; }
+.work-open { position: absolute; inset: 0; display: block; width: 100%; padding: 0; border: 0; background: var(--tint); cursor: zoom-in; overflow: hidden; }
+.work-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s var(--ease), filter .4s; }
+.work:hover .work-photo { transform: scale(1.045); }
+.work-open:focus-visible { outline: 3px solid var(--brand); outline-offset: -3px; }
+.works--photos .work-meta { pointer-events: none; }
+
+.lb { position: fixed; inset: 0; z-index: 120; display: grid; grid-template-rows: 1fr auto; place-items: center; padding: 24px 72px 20px; background: rgba(6, 8, 14, .92); }
+.lb[hidden] { display: none; }
+.lb-fig { margin: 0; display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; touch-action: pan-y; }
+.lb-img { max-width: 100%; max-height: calc(100vh - 150px); border-radius: 12px; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6); user-select: none; -webkit-user-drag: none; }
+.lb-cap { color: #fff; text-align: center; padding-top: 14px; }
+.lb-cap b { display: block; font-size: 17px; font-weight: 600; }
+.lb-cap span { font-size: 14px; color: rgba(255, 255, 255, .7); }
+.lb-count { position: absolute; top: 22px; left: 24px; color: rgba(255, 255, 255, .7); font-size: 13px; letter-spacing: .05em; }
+.lb-btn { position: absolute; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .18); transition: background .2s, transform .2s; }
+.lb-btn:hover { background: rgba(255, 255, 255, .2); }
+.lb-btn:active { transform: scale(.94); }
+.lb-close { top: 16px; right: 16px; font-size: 26px; line-height: 1; }
+.lb-prev { left: 14px; top: 50%; margin-top: -24px; }
+.lb-next { right: 14px; top: 50%; margin-top: -24px; }
+@media (max-width: 640px) {
+  .works--photos { grid-auto-rows: auto; }
+  .works--photos .work { aspect-ratio: 3 / 4; }
+  .lb { padding: 64px 12px 18px; }
+  .lb-img { max-height: calc(100vh - 190px); }
+  .lb-prev, .lb-next { top: auto; bottom: 18px; margin: 0; width: 44px; height: 44px; }
+  .lb-prev { left: 12px; } .lb-next { right: 12px; }
+  .lb-cap { padding: 12px 56px 0; }
+}

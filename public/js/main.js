@@ -5,6 +5,7 @@ import { initLogin } from './login.js';
 import { initMotion, flipLayout } from './motion.js';
 import { initAnalytics } from './analytics.js';
 import { initReviews } from './reviews.js';
+import { initGallery } from './gallery.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -30,6 +31,7 @@ initContact();
 initLogin();
 initAnalytics();
 initReviews();
+initGallery();
 
 /* Category cards → preselect garment in studio */
 $$('[data-pick]').forEach(el => el.addEventListener('click', e => {
@@ -95,7 +97,7 @@ $$('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
   $$('[data-filter]').forEach(b => b.classList.toggle('is-active', b === btn));
   const f = btn.dataset.filter;
   const works = $$('.work');
-  flipLayout(works, () => works.forEach(w => { w.hidden = !(f === 'all' || w.dataset.cat === f); }));
+  flipLayout(works, () => works.forEach(w => { w.hidden = !(f === 'all' || w.dataset.cat.split(' ').includes(f)); }));
 }));
 
 /* Motion system (entrances, reveals, sheets, feedback). If it fails, content stays visible. */
