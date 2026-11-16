@@ -269,6 +269,15 @@
     'q.qtyAria': 'Quantity',
     'q.pcs': 'pcs',
 
+    /* Google reviews (the reviews themselves stay in the customer's own words) */
+    'rev.eyebrow': 'Google reviews',
+    'rev.h2': 'What our clients say',
+    'rev.p': 'Real reviews from our customers on Google.',
+    'rev.more': 'Read more',
+    'rev.less': 'Show less',
+    'rev.all': 'See all reviews',
+    'rev.fewer': 'Show fewer reviews',
+
     /* theme + admin login */
     'theme.aria': 'Toggle dark mode',
     'login.aria': 'Admin login',
@@ -310,6 +319,8 @@
     'q.qtyAria': 'Ποσότητα',
     'q.pcs': 'τεμ.',
     'login.dash': 'Άνοιγμα πίνακα ελέγχου',
+    'rev.less': 'Λιγότερα',
+    'rev.fewer': 'Λιγότερες κριτικές',
     'err.login': 'Λάθος όνομα χρήστη ή κωδικός.',
     'err.loginRate': 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε 15 λεπτά.',
     'err.loginFields': 'Συμπληρώστε όνομα χρήστη και κωδικό.',
