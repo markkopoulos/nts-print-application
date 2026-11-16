@@ -293,41 +293,55 @@
           <div class="filters" role="group" data-i18n-attr="aria-label:work.filterAria" aria-label="Φίλτρο">
             <button type="button" class="chip-btn is-active" data-filter="all" data-i18n="work.all">Όλα</button>
             <button type="button" class="chip-btn" data-filter="business" data-i18n="work.business">Επιχειρήσεις</button>
+            <button type="button" class="chip-btn" data-filter="embroidery" data-i18n="work.embroidery">Κέντημα</button>
             <button type="button" class="chip-btn" data-filter="sports" data-i18n="work.sports">Αθλητικά</button>
-            <button type="button" class="chip-btn" data-filter="schools" data-i18n="work.schools">Σχολεία</button>
-            <button type="button" class="chip-btn" data-filter="events" data-i18n="work.events">Events</button>
-            <button type="button" class="chip-btn" data-filter="fashion" data-i18n="work.fashion">Fashion</button>
-            <button type="button" class="chip-btn" data-filter="custom" data-i18n="work.custom">Custom</button>
           </div>
         </div>
 
-        <div class="works">
-          <article class="work reveal" data-cat="schools">
-            <div class="work-img" style="--bg:#7b1e33"><i class="m-hoodie" style="--c:#f6f6f3"></i><img src="assets/samples/logo-dark.svg" alt="" class="work-logo" style="--w:30%; --t:41%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.schools">Σχολεία</span><h3 data-i18n="work.w1t">Hoodies αποφοίτων</h3><p data-i18n="work.w1d">Hoodies σε μεγάλη ποσότητα με εκτύπωση DTF</p></div>
+        <div class="works works--photos">
+          <article class="work work--tall reveal" data-cat="sports">
+            <button type="button" class="work-open" data-full="assets/work/basketball-jersey-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/basketball-jersey-900.webp" srcset="assets/work/basketball-jersey-900.webp 675w, assets/work/basketball-jersey-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Φανέλα μπάσκετ με ολόσωμη εκτύπωση, αριθμό 31 και λογότυπο χορηγού">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.sports">Αθλητικά</span><h3 data-i18n="work.p1t">Φανέλα μπάσκετ</h3><p data-i18n="work.p1d">Ολόσωμη εκτύπωση με αριθμό & χορηγούς</p></div>
+          </article>
+          <article class="work work--tall reveal" data-cat="business">
+            <button type="button" class="work-open" data-full="assets/work/electrician-tee-back-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/electrician-tee-back-900.webp" srcset="assets/work/electrician-tee-back-900.webp 675w, assets/work/electrician-tee-back-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μαύρη μπλούζα με πολύχρωμο λογότυπο ηλεκτρολόγου τυπωμένο στην πλάτη">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.business">Επιχειρήσεις</span><h3 data-i18n="work.p2t">Μπλούζες για ηλεκτρολόγο</h3><p data-i18n="work.p2d">Πολύχρωμο τύπωμα στην πλάτη</p></div>
           </article>
           <article class="work reveal" data-cat="business">
-            <div class="work-img" style="--bg:#f1efe8"><i class="m-cap" style="--c:#1f2a44"></i><img src="assets/samples/emblem.svg" alt="" class="work-logo" style="--w:16%; --t:36%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.business">Επιχειρήσεις</span><h3 data-i18n="work.w2t">Καπέλα με το brand σας</h3><p data-i18n="work.w2d">Κεντημένο logo</p></div>
+            <button type="button" class="work-open" data-full="assets/work/barbershop-tee-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/barbershop-tee-900.webp" srcset="assets/work/barbershop-tee-900.webp 675w, assets/work/barbershop-tee-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μαύρες μπλούζες barbershop με λευκό τύπωμα μπροστά και όνομα στο στήθος">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.business">Επιχειρήσεις</span><h3 data-i18n="work.p3t">Μπλούζες για barbershop</h3><p data-i18n="work.p3d">Τύπωμα μπροστά & όνομα στο στήθος</p></div>
           </article>
-          <article class="work reveal" data-cat="events">
-            <div class="work-img" style="--bg:#f4cf1d"><i class="m-tshirt" style="--c:#17181c"></i><img src="assets/samples/logo-light.svg" alt="" class="work-logo" style="--w:30%; --t:38%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.events">Events</span><h3 data-i18n="work.w3t">Merch για events</h3><p data-i18n="work.w3d">Custom τυπωμένα t-shirts για events</p></div>
+          <article class="work reveal" data-cat="business embroidery">
+            <button type="button" class="work-open" data-full="assets/work/embroidered-back-logo-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/embroidered-back-logo-900.webp" srcset="assets/work/embroidered-back-logo-900.webp 675w, assets/work/embroidered-back-logo-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μαύρη μπλούζα με κεντημένο κεραυνό και κείμενο στην πλάτη">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.embroidery">Κέντημα</span><h3 data-i18n="work.p4t">Κεντημένο λογότυπο</h3><p data-i18n="work.p4d">Κέντημα στην πλάτη</p></div>
           </article>
-          <article class="work reveal" data-cat="sports">
-            <div class="work-img" style="--bg:#f6ecee"><i class="m-sweatshirt" style="--c:#4a5639"></i><img src="assets/samples/logo-light.svg" alt="" class="work-logo" style="--w:30%; --t:38%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.sports">Αθλητικά</span><h3 data-i18n="work.w4t">Φούτερ ομάδας</h3><p data-i18n="work.w4d">Έγχρωμη εκτύπωση DTF</p></div>
+          <article class="work reveal" data-cat="business embroidery">
+            <button type="button" class="work-open" data-full="assets/work/embroidered-chest-logo-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/embroidered-chest-logo-900.webp" srcset="assets/work/embroidered-chest-logo-900.webp 675w, assets/work/embroidered-chest-logo-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μαύρο t-shirt με μικρό κεντημένο λογότυπο στο στήθος">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.embroidery">Κέντημα</span><h3 data-i18n="work.p5t">Κέντημα στο στήθος</h3><p data-i18n="work.p5d">Λογότυπο σε μαύρο t-shirt</p></div>
           </article>
-          <article class="work reveal" data-cat="fashion">
-            <div class="work-img" style="--bg:#17181c"><i class="m-tshirt" style="--c:#d9ccb2"></i><img src="assets/samples/emblem.svg" alt="" class="work-logo" style="--w:12%; --t:33%; --l:58%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.fashion">Fashion</span><h3 data-i18n="work.w5t">Capsule collection</h3><p data-i18n="work.w5d">Για ανεξάρτητα brands</p></div>
+          <article class="work reveal" data-cat="business">
+            <button type="button" class="work-open" data-full="assets/work/workwear-vest-back-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/workwear-vest-back-900.webp" srcset="assets/work/workwear-vest-back-900.webp 675w, assets/work/workwear-vest-back-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μπλε γιλέκο εργασίας με μεγάλο έγχρωμο λογότυπο στην πλάτη">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.business">Επιχειρήσεις</span><h3 data-i18n="work.p6t">Γιλέκα εργασίας</h3><p data-i18n="work.p6d">Μεγάλο λογότυπο στην πλάτη</p></div>
           </article>
-          <article class="work reveal" data-cat="custom">
-            <div class="work-img" style="--bg:#eef1ea"><i class="m-hoodie" style="--c:#17181c"></i><img src="assets/samples/logo-light.svg" alt="" class="work-logo" style="--w:28%; --t:41%"></div>
-            <div class="work-meta"><span class="tag" data-i18n="work.custom">Custom</span><h3 data-i18n="work.w6t">Μοναδικά κομμάτια</h3><p data-i18n="work.w6d">Από ένα μόνο δείγμα και πάνω</p></div>
+          <article class="work reveal" data-cat="business">
+            <button type="button" class="work-open" data-full="assets/work/workwear-vest-front-1600.webp" aria-haspopup="dialog">
+              <img class="work-photo" src="assets/work/workwear-vest-front-900.webp" srcset="assets/work/workwear-vest-front-900.webp 675w, assets/work/workwear-vest-front-1600.webp 1200w" sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw" width="675" height="900" loading="lazy" decoding="async" alt="Μπλε γιλέκο εργασίας με το λογότυπο της επιχείρησης στο στήθος">
+            </button>
+            <div class="work-meta"><span class="tag" data-i18n="work.business">Επιχειρήσεις</span><h3 data-i18n="work.p7t">Γιλέκο με λογότυπο στο στήθος</h3><p data-i18n="work.p7d">Το ίδιο σχέδιο, μπροστά</p></div>
           </article>
         </div>
-        <p class="note-small" data-i18n="work.note">* Ενδεικτικές εικόνες — θα αντικατασταθούν με φωτογραφίες από πραγματικές παραγωγές.</p>
       </div>
     </section>
 
@@ -367,6 +381,113 @@
           <div class="why"><b data-i18n="why.2t">Γρήγορη επικοινωνία</b><span data-i18n="why.2d">Πραγματική απάντηση στο μήνυμά σας, συνήθως μέσα στην ίδια μέρα.</span></div>
           <div class="why"><b data-i18n="why.3t">B2B & μεγάλες παραγγελίες</b><span data-i18n="why.3d">Από δείγμα πέντε τεμαχίων έως πλήρη εποχική παραγγελία.</span></div>
           <div class="why"><b data-i18n="why.4t">Προσοχή στη λεπτομέρεια</b><span data-i18n="why.4d">Τοποθέτηση, ταίριασμα χρωμάτων και φινίρισμα ελέγχονται στο χέρι.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REVIEWS (Google, verbatim) ============ -->
+    <section class="sec sec--tint" id="reviews">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <p class="eyebrow" data-i18n="rev.eyebrow">Κριτικές Google</p>
+          <h2 data-i18n="rev.h2">Τι λένε οι πελάτες μας</h2>
+          <p data-i18n="rev.p">Πραγματικές κριτικές από πελάτες μας στο Google.</p>
+        </div>
+        <div class="reviews reveal" id="reviewList" data-count="18">
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Τι να πρωτοπώ για αυτή την ομάδα! Η κοπέλα στο τηλέφωνο ήταν γλυκύτατη και εξαιρετικά εξυπηρετική. Με τον Νίκο σχεδιάσαμε μαζί από το μηδέν τις πρώτες μπλούζες για τη νέα μου επιχείρηση ,με βοήθησε πάρα πολύ και το αποτέλεσμα ήταν απλά τέλειο! Οι τιμές τους είναι άκρως οικονομικές και δεν έχω να προσάψω τίποτα αρνητικό. Πολλά μπράβο στα παιδιά για τον επαγγελματισμό τους, τους συστήνω ανεπιφύλακτα!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">S</span><span class="rv-name">Stefania</span></figcaption>
+          </figure>
+          <figure class="rv" lang="en">
+            <blockquote class="rv-text"><p>Top-notch quality and service! Nikolas is a young go-getter who truly understands what exceptional customer service means. Whether you need custom t-shirts, jackets, vests or any other type of print material, he delivers flawless results every single time. The turnaround is incredibly fast, the process is highly efficient, and his prices are super reasonable. NtsPrints never disappoints—highly recommended!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">SD</span><span class="rv-name">Sofia Dimopoulos</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Έμεινα πραγματικά πολύ ευχαριστημένη από την παραγγελία μου!</p><p>Τα φούτερ είναι πολύ καλής ποιότητας, με απαλή, χνουδωτή επένδυση εσωτερικά και πολύ ωραία εφαρμογή. Εξίσου προσεγμένη είναι και η εκτύπωση, τόσο σε ποιότητα όσο και στο τελικό αποτέλεσμα.</p><p>Η επικοινωνία ήταν εξαιρετική από την αρχή μέχρι το τέλος, η εξυπηρέτηση πολύ καλή και η παράδοση άμεση!!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">EM</span><span class="rv-name">Eutixia Marinou</span></figcaption>
+          </figure>
+          <figure class="rv" lang="en">
+            <blockquote class="rv-text"><p>What a find. I needed to get some printed t-shirts done quickly and at a reasonable price. The owner, Nikolas, was so helpful. He even made the logo for the t-shirts seeing that I have little talent in design. I simply told him what I wanted and within a day he had the logo ready for me. It just took a few days to get the t-shirts done and delivered!</p><p>I highly recommend doing business with NTS prints. Excellent service and unbeatable prices! I paid a lot less than what I’m used to paying for such quality work.</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">CF</span><span class="rv-name">Christos Filandrianos</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Μόλις παραλάβαμε τα μπλουζάκια της επιχείρησης μας με τυπωμένο το logo μας!Καταπληκτικη δουλειά,εξαιρετική ποιότητα κι ευχαριστούμε πολύ τον κύριο Νίκο για την ταχύτατη εξυπηρέτηση και παράδοση!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">ΝΚ</span><span class="rv-name">Νικος Καπιρης Λαυρεντια Φόνσου</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Άψογη εξυπηρέτηση! Ο Νικόλας πολύ πρόθυμος, ευγενικός και εξυπηρετικός πάντα .. Η ποιότητα της εκτύπωσης εξαιρετική .. Αν ψάχνετε αξιόπιστη εκτύπωση σε μπλούζες και άλλα προϊόντα, το προτείνω χωρίς δεύτερη σκέψη...</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">DV</span><span class="rv-name">Dionisia Varvatsouli</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Είχαμε μια εκπληκτική συνεργασία με τον Νίκο, πολύ γρήγορη εξυπηρέτηση και ποιότητα!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">KS</span><span class="rv-name">Kidathlon Sports for Kids</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Εξαιρετική δουλειά, άριστη επικοινωνία και πολύ καλές τιμές. Απόλυτα ευχαριστημένος!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">ΧΝ</span><span class="rv-name">Χαραλαμπος Νικολοπουλος</span></figcaption>
+          </figure>
+          <figure class="rv" lang="el">
+            <blockquote class="rv-text"><p>Εξαιρετική δουλειά!!!!! Και ποιότητα και καλές τιμές!!!!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">OM</span><span class="rv-name">Olga Maro</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Εξαιρετική δουλειά και καταπληκτικό αποτέλεσμα. Σε ευχαριστώ πολύ για τα μπλουζάκια Νίκο μου.</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">ΚΓ</span><span class="rv-name">Κυριακος Γραφακος</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Άψογη εξυπηρέτηση ο Νικόλαος και πρόθυμος να βοηθήσει σε όλα τον ευχαριστώ πολύ για όλα και θα τον συνιστούσα ανεπιφύλακτα.</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">ΜΛ</span><span class="rv-name">Μαριος Λακας</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Καλή και γρήγορη εξυπηρέτηση . Οι τιμές πολύ προσιτές και η ποιότητα πολύ καλή ! Το συστήνω ανεπιφύλακτα .</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">XK</span><span class="rv-name">Xanthi Karouti Falaina</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Άψογη συνεργασία και εξυπηρέτηση. Ευγενικότατοι άνθρωποι και παίρνεις αυτό που συμφωνείς στην ώρα του!!!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">FG</span><span class="rv-name">F.G. Developments</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Φοβερή ποιότητα t-shirt πάρα πολύ καλή δουλειά στην εκτύπωση με μία πολύ μικρή καθυστέρηση βέβαια αλλά είναι πολύ λογικό Ιούλιο Αύγουστο γίνεται χαμός ευχαριστώ πάρα πολύ το Νικόλα και τους συνεργάτες του.</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">LN</span><span class="rv-name">Labros Natsis</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Εξαιρετικός ο Νίκος , πολύ καλή ποιότητα και καλές τιμές!!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">IS</span><span class="rv-name">Iakovos Stratopoulos</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Καλη δουλειά και συνέπεια!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">SN</span><span class="rv-name">Stelios Nikolakis</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Τα αξίζετε τα πέντε αστέρια Μπράβο σας</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">ΚΜ</span><span class="rv-name">Κωνσταντινος Ματρακος</span></figcaption>
+          </figure>
+          <figure class="rv rv--extra" lang="el">
+            <blockquote class="rv-text"><p>Πολύ καλή δουλειά!!!</p></blockquote>
+            <button type="button" class="rv-more" hidden data-i18n="rev.more">Περισσότερα</button>
+            <figcaption><span class="rv-av" aria-hidden="true">NN</span><span class="rv-name">Nikos Ninos</span></figcaption>
+          </figure>
+        </div>
+        <div class="rv-rail" aria-hidden="true"><span></span></div>
+        <div class="rv-actions">
+          <button type="button" class="btn btn--ghost" id="reviewsAll" aria-expanded="false"><span data-i18n="rev.all">Δείτε όλες τις κριτικές</span> (18)</button>
         </div>
       </div>
     </section>
