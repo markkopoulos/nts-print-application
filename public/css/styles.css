@@ -221,7 +221,7 @@ p { margin: 0; }
 .brand--light { color: #fff; }
 .brand--light span { color: var(--yellow); }
 .nav { display: flex; gap: 32px; }
-.nav a { font-size: 15px; color: var(--ink-2); position: relative; padding: 6px 0; }
+.nav a { font-size: 15px; color: var(--ink-2); position: relative; padding: 6px 0; white-space: nowrap; }
 .nav a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--brand); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
 .nav a:hover::after { transform: scaleX(1); }
 .hdr-cta { display: flex; align-items: center; gap: 12px; }
@@ -687,10 +687,8 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   .q-box { grid-template-columns: 300px 1fr; }
 }
 
-@media (max-width: 960px) {
-  :root { --hdr: 66px; }
-  .topbar span:first-child { display: none; }
-  .topbar-in { justify-content: center; }
+/* header collapses to the burger menu (7 links + actions need ~1240px) */
+@media (max-width: 1240px) {
   .burger { display: block; }
   .nav {
     position: absolute; left: 0; right: 0; top: 100%;
@@ -699,6 +697,12 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   }
   .nav a { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
   .nav a::after { display: none; }
+}
+
+@media (max-width: 960px) {
+  :root { --hdr: 66px; }
+  .topbar span:first-child { display: none; }
+  .topbar-in { justify-content: center; }
   .hero { padding-top: 40px; }
   .hero-grid, .about, .contact { grid-template-columns: 1fr; gap: 40px; }
   .float-badge--a { left: 8px; }
@@ -956,4 +960,19 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   .lb-prev, .lb-next { top: auto; bottom: 18px; margin: 0; width: 44px; height: 44px; }
   .lb-prev { left: 12px; } .lb-next { right: 12px; }
   .lb-cap { padding: 12px 56px 0; }
+}
+
+/* Announcement bar: short Google reviews scrolling (full list lives in #reviews) */
+.marquee--reviews { display: block; color: inherit; text-decoration: none; }
+.marquee--reviews .marquee-track { animation-duration: 150s; }
+.marquee--reviews:hover .marquee-track { animation-play-state: paused; }
+.marquee--reviews span { gap: 10px; }
+.marquee--reviews q { quotes: '“' '”'; color: var(--ink); }
+.marquee--reviews b { font-weight: 500; color: var(--ink-2); font-size: 14px; }
+.marquee--reviews b::before { content: '— '; }
+
+/* 7 links in the header: tighten before the burger menu kicks in */
+@media (max-width: 1400px) and (min-width: 1241px) {
+  .nav { gap: 18px; }
+  .nav a { font-size: 14px; }
 }
