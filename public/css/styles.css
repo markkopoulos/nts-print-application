@@ -976,3 +976,11 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   .nav { gap: 18px; }
   .nav a { font-size: 14px; }
 }
+
+/* Logo mark next to the wordmark */
+.brand { display: inline-flex; align-items: center; white-space: nowrap; }
+.brand-mark { height: 36px; width: auto; flex: none; margin-right: 10px; }
+.ftr .brand-mark { height: 44px; }
+@media (max-width: 640px) { .brand-mark { height: 30px; margin-right: 8px; } }
+@media (max-width: 420px) { .hdr .brand { font-size: 19px; letter-spacing: .04em; } .hdr .brand-mark { height: 26px; margin-right: 6px; } }
+@media (max-width: 350px) { .hdr .brand { font-size: 0; } .hdr .brand-mark { height: 30px; margin-right: 0; } }
