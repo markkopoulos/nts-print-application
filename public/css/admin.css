@@ -1043,3 +1043,10 @@ html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(roo
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 .chart-tip[hidden] { display: none; }
+
+/* Logo mark next to the wordmark */
+.login-brand { display: flex; justify-content: center; align-items: center; white-space: nowrap; }
+.admin-brand { display: inline-flex; align-items: center; white-space: nowrap; }
+.login-brand .brand-mark, .admin-brand .brand-mark { margin-right: 10px; }
+.login-brand .brand-mark { height: 44px; width: auto; }
+.admin-brand .brand-mark { height: 30px; width: auto; }
