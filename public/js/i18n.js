@@ -32,6 +32,7 @@
     'nav.services': 'Services',
     'nav.studio': 'Mockup Studio',
     'nav.work': 'Our Work',
+    'nav.reviews': 'Reviews',
     'nav.about': 'About',
     'nav.faq': 'FAQ',
     'nav.contact': 'Contact',
