@@ -687,8 +687,8 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
   .q-box { grid-template-columns: 300px 1fr; }
 }
 
-/* header collapses to the burger menu (7 links + actions need ~1240px) */
-@media (max-width: 1240px) {
+/* header collapses to the burger menu (logo + 7 links + actions need ~1280px) */
+@media (max-width: 1280px) {
   .burger { display: block; }
   .nav {
     position: absolute; left: 0; right: 0; top: 100%;
@@ -972,15 +972,15 @@ select.field { appearance: none; -webkit-appearance: none; background: var(--sur
 .marquee--reviews b::before { content: '— '; }
 
 /* 7 links in the header: tighten before the burger menu kicks in */
-@media (max-width: 1400px) and (min-width: 1241px) {
-  .nav { gap: 18px; }
-  .nav a { font-size: 14px; }
+@media (max-width: 1599px) and (min-width: 1281px) {
+  .nav { gap: clamp(16px, 2.2vw - 12px, 28px); }
+  .nav a { font-size: 14.5px; }
 }
 
 /* Logo mark next to the wordmark */
 .brand { display: inline-flex; align-items: center; white-space: nowrap; }
+.hdr .brand { flex: none; } /* never let the links squeeze the logo + name */
 .brand-mark { height: 36px; width: auto; flex: none; margin-right: 10px; }
 .ftr .brand-mark { height: 44px; }
-@media (max-width: 640px) { .brand-mark { height: 30px; margin-right: 8px; } }
-@media (max-width: 420px) { .hdr .brand { font-size: 19px; letter-spacing: .04em; } .hdr .brand-mark { height: 26px; margin-right: 6px; } }
-@media (max-width: 350px) { .hdr .brand { font-size: 0; } .hdr .brand-mark { height: 30px; margin-right: 0; } }
+/* phones: logo only in the header (name stays for screen readers via aria-label) */
+@media (max-width: 640px) { .hdr .brand { font-size: 0; letter-spacing: 0; } .hdr .brand-mark { height: 38px; margin-right: 0; } }
